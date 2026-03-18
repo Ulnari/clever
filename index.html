@@ -20,8 +20,9 @@
   body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;padding:12px;user-select:none;}
   h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;background:linear-gradient(90deg,var(--yellow),var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
   .subtitle{text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:12px;}
-  .game-layout{display:grid;grid-template-columns:1fr 320px;gap:12px;max-width:1100px;margin:0 auto;}
-  .scoresheet{display:flex;flex-direction:column;gap:10px;}
+  .game-layout{display:grid;grid-template-columns:auto auto 320px;gap:12px;max-width:1400px;margin:0 auto;align-items:start;}
+  .scoresheet-left{display:flex;flex-direction:column;gap:10px;}
+  .scoresheet-right{display:flex;flex-direction:column;gap:10px;}
   .section{border-radius:var(--radius);padding:10px 12px;}
   .section-yellow{background:var(--yellow-bg);border:2px solid var(--yellow);}
   .section-blue{background:var(--blue-bg);border:2px solid var(--blue);}
@@ -156,7 +157,8 @@
 <p class="subtitle">Solo Game — Roll & Write</p>
 
 <div class="game-layout">
-  <div class="scoresheet">
+  <!-- LEFT: Yellow + Blue -->
+  <div class="scoresheet-left">
     <div class="section section-yellow">
       <div class="section-label" style="color:var(--yellow)">🟡 YELLOW<span class="score-badge" id="yellow-score">0 pts</span></div>
       <div class="yellow-grid-wrap">
@@ -173,6 +175,10 @@
       <div class="blue-milestones" id="blue-milestones"></div>
       <div class="blue-grid-wrap"><div id="blue-grid-container"></div></div>
     </div>
+  </div>
+
+  <!-- MIDDLE: Green + Orange + Purple -->
+  <div class="scoresheet-right">
     <div class="section section-green">
       <div class="section-label" style="color:var(--green)">🟢 GREEN<span class="score-badge" id="green-score">0 pts</span></div>
       <div class="green-pts-row" id="green-pts-row"></div>
@@ -278,7 +284,7 @@ const ORANGE_FIELDS = [
   {m:1,bonus:'extra_die'},{m:2},{m:1,bonus:'fox'},{m:2},{m:1,bonus:'purple_6'},{m:3}
 ];
 const PURPLE_FIELDS = [
-  {},{},{},{bonus:'reroll'},{bonus:'blue_X'},{bonus:'extra_die'},
+  {},{},{bonus:'reroll'},{bonus:'blue_X'},{bonus:'extra_die'},
   {bonus:'yellow_X'},{bonus:'fox'},{bonus:'reroll'},{bonus:'green_X'},{bonus:'purple_6'},{bonus:'extra_die'}
 ];
 const ROUND_BONUSES = ['reroll','extra_die','reroll','black_any',null,null];
@@ -327,7 +333,7 @@ function initState() {
     },
     green:{filled:Array(11).fill(null),next:0},
     orange:{filled:Array(11).fill(null),next:0},
-    purple:{filled:Array(12).fill(null),next:0},
+    purple:{filled:Array(11).fill(null),next:0},
 
     rerollCircled:0, rerollUsed:0,
     extraCircled:0, extraUsed:0,
@@ -338,6 +344,7 @@ function initState() {
     bonusMode:null,  // current active bonus type, or null
 
     roundBonusGiven:false,
+    passiveDone:false,
     gameOver:false,
     log:[],
     ohmyCb:null,
@@ -491,13 +498,18 @@ function rollDice() {
     for (let i=0;i<3;i++) sorted[i].onTray=true;
     S.rollCount=1; anim();
     addLog(`Passive — tray: [${S.dice.filter(d=>d.onTray).map(d=>d.value).join(',')}]`);
-    // Check tray placeability
     const trayIdx=S.dice.map((_,i)=>i).filter(i=>S.dice[i].onTray);
     if (!trayIdx.some(i=>dieIsPlaceable(i))) {
       S.passiveExpanded=true;
       addLog('No tray die placeable — all dice available');
     }
     afterRoll(); return;
+  }
+
+  // Passive stuck: nextRollAllowed=true after Oh My — end passive turn
+  if (!S.isActive&&S.rollCount>0&&S.nextRollAllowed) {
+    addLog('Passive: no valid placement — skipping.');
+    endPassiveTurn(); return;
   }
 
   // Active first roll
@@ -515,8 +527,10 @@ function rollDice() {
     addLog(`Active roll 1`); afterRoll(); return;
   }
 
-  // Active subsequent roll
-  if (S.isActive&&!S.turnOver&&S.rollCount>0&&S.rollCount<3) {
+  // Active subsequent roll (or skip when no placement possible after last roll)
+  if (S.isActive&&!S.turnOver&&S.rollCount>0) {
+    // If no rolls left, just end the turn (nextRollAllowed was true = no valid placement on last roll)
+    if (S.rollCount>=3) { endActiveTurn(); return; }
     const free=S.dice.filter(d=>!d.onTray&&!d.onSheet);
     if (!free.length){endActiveTurn();return;}
     free.forEach(d=>{d.value=rollSingle();});
@@ -604,14 +618,20 @@ function endActiveTurn() {
   updateUI();
 }
 function endPassiveTurn() {
-  S.turnOver=false; addLog('Passive done.'); updateUI();
-  setTimeout(()=>advanceRound(),500);
+  S.turnOver=false; S.passiveDone=true;
+  addLog('Passive done.');
+  // Don't advance yet — wait for any pending bonus chain to finish first
+  if (!S.processingBonus && !S.bonusQueue.length) {
+    setTimeout(()=>advanceRound(), 500);
+  }
+  updateUI();
 }
 function advanceRound() {
   S.round++;
   if (S.round>S.maxRounds){endGame();return;}
   S.isActive=true; S.rollCount=0; S.turnOver=false;
-  S.nextRollAllowed=false; S.placedThisRoll=false; S.passiveExpanded=false; S.roundBonusGiven=false;
+  S.nextRollAllowed=false; S.placedThisRoll=false; S.passiveExpanded=false;
+  S.roundBonusGiven=false; S.passiveDone=false;
   S.dice.forEach(d=>{d.onTray=false;d.onSheet=false;d.selected=false;d.extraUsed=false;});
   addLog(`=== Round ${S.round} ===`); updateUI();
 }
@@ -691,7 +711,16 @@ function queueBonus(b){S.bonusQueue.push(b);if(!S.processingBonus)processNext();
 function processNext(){
   // Don't start the next bonus while the player is still placing the current one
   if (S.bonusMode) return;
-  if (!S.bonusQueue.length){S.processingBonus=false;updateUI();return;}
+  if (!S.bonusQueue.length){
+    S.processingBonus=false;
+    updateUI();
+    // Passive turn finished while bonuses were pending — advance now that queue is empty
+    if (S.passiveDone) {
+      S.passiveDone=false;
+      setTimeout(()=>advanceRound(), 500);
+    }
+    return;
+  }
   S.processingBonus=true;
   applyBonus(S.bonusQueue.shift());
 }
@@ -1122,7 +1151,9 @@ function updatePhaseUI(){
 
   // ROLL
   const rollOk=!S.gameOver&&!S.awaitingPlacement&&!S.awaitingExtraDie&&!blocking&&(
-    S.isActive?(S.rollCount===0||(S.isActive&&(S.nextRollAllowed||S.placedThisRoll)&&!S.turnOver)||S.turnOver):S.rollCount===0
+    S.isActive
+      ? (S.rollCount===0 || (S.nextRollAllowed||S.placedThisRoll) && !S.turnOver || S.turnOver)
+      : (S.rollCount===0 || S.nextRollAllowed)  // passive: first roll OR stuck after Oh My
   );
   document.getElementById('btn-roll').disabled=!rollOk;
 
