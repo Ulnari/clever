@@ -20,7 +20,7 @@
   body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;padding:12px;user-select:none;}
   h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;background:linear-gradient(90deg,var(--yellow),var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
   .subtitle{text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:12px;}
-  .game-layout{display:grid;grid-template-columns:auto auto 320px;gap:12px;max-width:1400px;margin:0 auto;align-items:start;}
+  .game-layout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:1400px;margin:0 auto;align-items:start;}
   .scoresheet-left{display:flex;flex-direction:column;gap:10px;}
   .scoresheet-right{display:flex;flex-direction:column;gap:10px;}
   .section{border-radius:var(--radius);padding:10px 12px;}
@@ -177,7 +177,7 @@
     </div>
   </div>
 
-  <!-- MIDDLE: Green + Orange + Purple -->
+  <!-- MIDDLE: Green + Orange + Purple + Score -->
   <div class="scoresheet-right">
     <div class="section section-green">
       <div class="section-label" style="color:var(--green)">🟢 GREEN<span class="score-badge" id="green-score">0 pts</span></div>
@@ -191,6 +191,16 @@
     <div class="section section-purple">
       <div class="section-label" style="color:var(--purple)">🟣 PURPLE<span class="score-badge" id="purple-score">0 pts</span></div>
       <div class="row-strip" id="purple-strip"></div>
+    </div>
+    <div class="panel-card">
+      <div class="panel-title">SCORE</div>
+      <div class="score-row"><span><span class="score-dot" style="background:var(--yellow)"></span>Yellow</span><span id="sc-yellow">0</span></div>
+      <div class="score-row"><span><span class="score-dot" style="background:var(--blue)"></span>Blue</span><span id="sc-blue">0</span></div>
+      <div class="score-row"><span><span class="score-dot" style="background:var(--green)"></span>Green</span><span id="sc-green">0</span></div>
+      <div class="score-row"><span><span class="score-dot" style="background:var(--orange)"></span>Orange</span><span id="sc-orange">0</span></div>
+      <div class="score-row"><span><span class="score-dot" style="background:var(--purple)"></span>Purple</span><span id="sc-purple">0</span></div>
+      <div class="score-row"><span>🦊 Foxes</span><span id="sc-foxes">0</span></div>
+      <div class="total-row"><span>TOTAL</span><span id="sc-total">0</span></div>
     </div>
   </div>
 
@@ -215,16 +225,6 @@
       <div class="panel-title">ACTIONS</div>
       <div class="action-row"><span class="action-label">🔄 Reroll</span><div class="action-pips" id="reroll-pips"></div></div>
       <div class="action-row"><span class="action-label">➕ Extra Die</span><div class="action-pips" id="extra-die-pips"></div></div>
-    </div>
-    <div class="panel-card">
-      <div class="panel-title">SCORE</div>
-      <div class="score-row"><span><span class="score-dot" style="background:var(--yellow)"></span>Yellow</span><span id="sc-yellow">0</span></div>
-      <div class="score-row"><span><span class="score-dot" style="background:var(--blue)"></span>Blue</span><span id="sc-blue">0</span></div>
-      <div class="score-row"><span><span class="score-dot" style="background:var(--green)"></span>Green</span><span id="sc-green">0</span></div>
-      <div class="score-row"><span><span class="score-dot" style="background:var(--orange)"></span>Orange</span><span id="sc-orange">0</span></div>
-      <div class="score-row"><span><span class="score-dot" style="background:var(--purple)"></span>Purple</span><span id="sc-purple">0</span></div>
-      <div class="score-row"><span>🦊 Foxes</span><span id="sc-foxes">0</span></div>
-      <div class="total-row"><span>TOTAL</span><span id="sc-total">0</span></div>
     </div>
     <div class="panel-card">
       <div class="panel-title">LOG</div>
