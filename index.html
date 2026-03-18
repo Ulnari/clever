@@ -6,499 +6,159 @@
 <title>Ganz schön clever – Solo</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap');
-
   :root {
-    --bg: #1a1a2e;
-    --panel: #16213e;
-    --yellow: #f5c518;
-    --yellow-dark: #c9a000;
-    --yellow-bg: #2a2200;
-    --blue: #3a86ff;
-    --blue-dark: #1a56c4;
-    --blue-bg: #001530;
-    --green: #06d6a0;
-    --green-dark: #049e76;
-    --green-bg: #002218;
-    --orange: #fb5607;
-    --orange-dark: #c43f00;
-    --orange-bg: #280d00;
-    --purple: #9b5de5;
-    --purple-dark: #6b2db5;
-    --purple-bg: #1a0030;
-    --white-die: #eee;
-    --text: #f0f0f0;
-    --text-dim: #888;
-    --radius: 8px;
-    --shadow: 0 4px 20px rgba(0,0,0,0.5);
+    --bg:#1a1a2e; --panel:#16213e;
+    --yellow:#f5c518; --yellow-dark:#c9a000; --yellow-bg:#2a2200;
+    --blue:#3a86ff; --blue-dark:#1a56c4; --blue-bg:#001530;
+    --green:#06d6a0; --green-bg:#002218;
+    --orange:#fb5607; --orange-bg:#280d00;
+    --purple:#9b5de5; --purple-bg:#1a0030;
+    --white-die:#eee; --text:#f0f0f0; --text-dim:#888;
+    --radius:8px;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Nunito', sans-serif;
-    min-height: 100vh;
-    padding: 12px;
-    user-select: none;
-  }
-
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.2rem;
-    letter-spacing: 3px;
-    background: linear-gradient(90deg, var(--yellow), var(--orange), var(--purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-align: center;
-    margin-bottom: 4px;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 0.85rem;
-    margin-bottom: 12px;
-  }
-
-  .game-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 12px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .scoresheet { display: flex; flex-direction: column; gap: 10px; }
-
-  /* ── SECTION CARDS ── */
-  .section {
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    position: relative;
-  }
-  .section-yellow { background: var(--yellow-bg); border: 2px solid var(--yellow); }
-  .section-blue   { background: var(--blue-bg);   border: 2px solid var(--blue); }
-  .section-green  { background: var(--green-bg);  border: 2px solid var(--green); }
-  .section-orange { background: var(--orange-bg); border: 2px solid var(--orange); }
-  .section-purple { background: var(--purple-bg); border: 2px solid var(--purple); }
-
-  .section-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-label .score-badge {
-    margin-left: auto;
-    background: rgba(255,255,255,0.1);
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.85rem;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 800;
-  }
-
-  /* ── YELLOW GRID ── */
-  .yellow-grid-wrap { display: flex; gap: 8px; align-items: flex-start; }
-  .yellow-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 44px);
-    gap: 4px;
-  }
-  .yellow-col-scores {
-    display: grid;
-    grid-template-columns: repeat(4, 44px);
-    gap: 4px;
-    margin-top: 4px;
-  }
-  .yellow-row-bonuses {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-left: 4px;
-    justify-content: flex-start;
-  }
-  .grid-cell {
-    width: 44px; height: 44px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 1rem;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s;
-    position: relative;
-    border: 2px solid rgba(255,255,255,0.15);
-  }
-  .grid-cell.yellow-cell { background: rgba(245,197,24,0.12); color: var(--yellow); }
-  .grid-cell.blue-cell   { background: rgba(58,134,255,0.12); color: var(--blue); }
-  .grid-cell.crossed     { background: rgba(255,255,255,0.08) !important; }
-  .grid-cell.crossed::after {
-    content: '✕';
-    position: absolute;
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--yellow);
-  }
-  .grid-cell.blue-cell.crossed::after { color: var(--blue); }
-  .grid-cell.selectable {
-    box-shadow: 0 0 0 2px var(--yellow), 0 0 12px var(--yellow);
-    cursor: pointer;
-  }
-  .grid-cell.blue-cell.selectable {
-    box-shadow: 0 0 0 2px var(--blue), 0 0 12px var(--blue);
-  }
-  .grid-cell:hover:not(.crossed):not(.disabled).selectable { transform: scale(1.08); }
-  .grid-cell.disabled { opacity: 0.4; cursor: default; }
-  /* Pre-printed X cells — filled from the start, cannot be placed on */
-  .grid-cell.preprinted-x {
-    background: rgba(245,197,24,0.06) !important;
-    color: var(--yellow-dark);
-    font-size: 1.5rem;
-    cursor: default;
-    border-color: rgba(245,197,24,0.2);
-    opacity: 0.55;
-  }
-
-  .col-score-badge {
-    width: 44px; height: 26px;
-    border-radius: 4px;
-    background: var(--yellow-dark);
-    color: #000;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 0.8rem;
-  }
-  .col-score-badge.earned { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-
-  .row-bonus-badge {
-    width: 36px; height: 44px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-align: center;
-    border: 2px solid rgba(255,255,255,0.2);
-    background: rgba(0,0,0,0.3);
-  }
-  .row-bonus-badge.earned { opacity: 0.4; }
-
-  /* diagonal bonus */
-  .diag-bonus {
-    margin-top: 4px;
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.75rem; color: var(--text-dim);
-  }
-
-  /* ── BLUE GRID ── */
-  /* blue-grid-container now contains an inline-grid with grid-col + bonus-col side by side */
-  .blue-grid-wrap { display: flex; flex-direction: column; align-items: flex-start; }
-  .blue-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 44px);
-    gap: 4px;
-  }
-  .blue-grid-row0 { grid-template-columns: repeat(3, 44px); }
-  .blue-milestones {
-    display: flex; gap: 3px; flex-wrap: wrap;
-    margin-bottom: 6px;
-  }
-  .milestone-pip {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: rgba(58,134,255,0.2);
-    border: 2px solid var(--blue-dark);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.6rem; font-weight: 800; color: var(--blue);
-  }
-  .milestone-pip.reached { background: var(--blue); color: #000; }
-
-  /* col-bonuses: align under cols 0-3 of rows 1+2 (which start at x=0) */
-  .blue-col-bonuses {
-    display: flex; gap: 4px;
-    margin-top: 4px;
-  }
-  .blue-row-bonuses {
-    display: flex; flex-direction: column; gap: 4px; margin-left: 4px;
-  }
-
-  /* ── ROW SECTIONS (green, orange, purple) ── */
-  .row-strip {
-    display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
-  }
-  /* Green points milestone row above cells */
-  .green-pts-row {
-    display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 3px;
-  }
-  .green-pts-pip {
-    width: 42px; height: 18px;
-    border-radius: 3px;
-    background: rgba(6,214,160,0.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.58rem; font-weight: 800; color: var(--green);
-  }
-  .green-pts-pip.reached { background: var(--green); color: #000; }
-  .row-cell {
-    width: 42px; height: 42px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 0.85rem;
-    border: 2px solid rgba(255,255,255,0.15);
-    position: relative;
-    cursor: default;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  .row-cell.green-cell  { background: rgba(6,214,160,0.1); color: var(--green); }
-  .row-cell.orange-cell { background: rgba(251,86,7,0.1);  color: var(--orange); }
-  .row-cell.purple-cell { background: rgba(155,93,229,0.1);color: var(--purple); }
-  .row-cell.filled { }
-  .row-cell.selectable.green-cell  { box-shadow: 0 0 0 2px var(--green), 0 0 10px var(--green); cursor: pointer; }
-  .row-cell.selectable.orange-cell { box-shadow: 0 0 0 2px var(--orange), 0 0 10px var(--orange); cursor: pointer; }
-  .row-cell.selectable.purple-cell { box-shadow: 0 0 0 2px var(--purple), 0 0 10px var(--purple); cursor: pointer; }
-  .row-cell:hover.selectable { transform: scale(1.08); }
-  .row-cell.disabled { opacity: 0.4; }
-  .row-cell .cell-bonus {
-    position: absolute; bottom: -1px; right: -1px;
-    font-size: 0.55rem; background: rgba(0,0,0,0.7);
-    border-radius: 3px; padding: 1px 2px; line-height: 1;
-  }
-  .row-cell .cell-pts {
-    position: absolute; top: -1px; left: -1px;
-    font-size: 0.5rem; color: var(--text-dim);
-  }
-  .row-cell .cell-mult {
-    position: absolute; top: 1px; right: 2px;
-    font-size: 0.6rem; color: var(--text-dim); font-weight: 700;
-  }
-  .row-cell .cell-cond {
-    position: absolute; top: 1px; left: 2px;
-    font-size: 0.52rem; color: var(--text-dim); font-weight: 700;
-  }
-
-  /* ── RIGHT PANEL ── */
-  .right-panel { display: flex; flex-direction: column; gap: 10px; }
-
-  .panel-card {
-    background: var(--panel);
-    border-radius: var(--radius);
-    padding: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: var(--shadow);
-  }
-
-  .panel-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-  }
-
-  /* ── DICE ── */
-  .dice-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  .die {
-    width: 52px; height: 52px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    position: relative;
-    border: 3px solid transparent;
-  }
-  .die-yellow { background: var(--yellow); color: #000; }
-  .die-blue   { background: var(--blue);   color: #fff; }
-  .die-green  { background: var(--green);  color: #000; }
-  .die-orange { background: var(--orange); color: #fff; }
-  .die-purple { background: var(--purple); color: #fff; }
-  .die-white  { background: var(--white-die); color: #000; }
-  .die.selectable { border-color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.5); cursor: pointer; }
-  .die.selectable:hover { transform: translateY(-4px) scale(1.08); }
-  .die.on-tray { opacity: 0.35; cursor: default; border-color: transparent; transform: none !important; box-shadow: none !important; }
-  .die.selected { border-color: #fff; box-shadow: 0 0 16px rgba(255,255,255,0.8); transform: translateY(-6px); }
-  .die.on-sheet { opacity: 0.5; cursor: default; transform: none !important; box-shadow: none !important; }
-  .die-label {
-    position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%);
-    font-size: 0.6rem; color: var(--text-dim); white-space: nowrap;
-  }
-
-  /* ── PHASE INFO ── */
-  .phase-bar {
-    background: rgba(255,255,255,0.05);
-    border-radius: 6px;
-    padding: 8px 12px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
-  }
-  .phase-active   { border-left: 4px solid var(--yellow); color: var(--yellow); }
-  .phase-passive  { border-left: 4px solid var(--blue);   color: var(--blue); }
-
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 800;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.1s;
-    letter-spacing: 1px;
-  }
-  .btn:hover:not(:disabled) { transform: translateY(-1px); }
-  .btn:disabled { opacity: 0.3; cursor: default; }
-  .btn-primary { background: var(--yellow); color: #000; }
-  .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); }
-  .btn-danger { background: var(--orange); color: #fff; }
-
-  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-
-  /* ── ACTIONS TRACKER ── */
-  .action-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-  .action-pips { display: flex; gap: 4px; }
-  .action-pip {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--text-dim);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.6rem; cursor: pointer;
-    transition: background 0.1s;
-  }
-  .action-pip.circled  { background: rgba(255,255,255,0.2); border-color: var(--text); }
-  .action-pip.used     { background: rgba(255,0,0,0.2); border-color: var(--orange); }
-  .action-pip.used::after { content: '✕'; font-size: 0.55rem; color: var(--orange); }
-  .action-label { font-size: 0.8rem; color: var(--text-dim); min-width: 70px; }
-
-  /* ── SCORE PANEL ── */
-  .score-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 0.85rem;
-  }
-  .score-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; display: inline-block; }
-  .total-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px;
-  }
-
-  /* ── ROUND TRACKER ── */
-  .round-pips { display: flex; gap: 6px; justify-content: center; margin-bottom: 8px; }
-  .round-pip {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,255,255,0.2);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.75rem;
-  }
-  .round-pip.current { background: var(--yellow); color: #000; border-color: var(--yellow); }
-  .round-pip.done    { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
-
-  /* ── LOG ── */
-  .log-area {
-    max-height: 100px; overflow-y: auto; font-size: 0.72rem;
-    color: var(--text-dim); line-height: 1.6;
-  }
-  .log-area::-webkit-scrollbar { width: 4px; }
-  .log-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100; padding: 20px;
-  }
-  .modal-box {
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 24px;
-    max-width: 400px; width: 100%;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-    text-align: center;
-  }
-  .modal-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    letter-spacing: 3px;
-    margin-bottom: 12px;
-  }
-  .modal-scores { margin: 16px 0; }
-  .modal-score-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9rem; }
-  .modal-total { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; margin: 12px 0; }
-  .modal-rating { font-size: 1.1rem; color: var(--yellow); font-weight: 800; margin-bottom: 16px; }
-
-  /* ── BONUS PICK BANNER (non-modal, anchored to right panel) ── */
-  .bonus-overlay {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    width: 300px;
-    z-index: 90;
-    pointer-events: none; /* panel itself is non-blocking */
-  }
-  .bonus-overlay.hidden { display: none !important; }
-  .bonus-box {
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 14px 16px;
-    border: 2px solid var(--yellow);
-    text-align: center;
-    pointer-events: all; /* only the box itself captures clicks */
-    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
-  }
-  .bonus-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 4px; }
-  .bonus-box p { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.4; }
-
-  .hidden { display: none !important; }
-
-  /* Roll animation */
-  @keyframes rollDie {
-    0% { transform: rotate(0deg) scale(1); }
-    25% { transform: rotate(15deg) scale(1.1); }
-    50% { transform: rotate(-10deg) scale(0.95); }
-    75% { transform: rotate(8deg) scale(1.05); }
-    100% { transform: rotate(0deg) scale(1); }
-  }
-  .rolling { animation: rollDie 0.3s ease; }
-
-  @keyframes bonusPop {
-    0%   { transform: scale(0.8); opacity: 0; }
-    60%  { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); }
-  }
-  .bonus-pop { animation: bonusPop 0.35s ease forwards; }
-
-  /* Tray */
-  .tray-label {
-    font-size: 0.7rem; color: var(--text-dim); text-align: center; margin-top: 4px;
-  }
-
-  .info-tip {
-    font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 6px; font-style: italic;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;padding:12px;user-select:none;}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;background:linear-gradient(90deg,var(--yellow),var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
+  .subtitle{text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:12px;}
+  .game-layout{display:grid;grid-template-columns:1fr 320px;gap:12px;max-width:1100px;margin:0 auto;}
+  .scoresheet{display:flex;flex-direction:column;gap:10px;}
+  .section{border-radius:var(--radius);padding:10px 12px;}
+  .section-yellow{background:var(--yellow-bg);border:2px solid var(--yellow);}
+  .section-blue{background:var(--blue-bg);border:2px solid var(--blue);}
+  .section-green{background:var(--green-bg);border:2px solid var(--green);}
+  .section-orange{background:var(--orange-bg);border:2px solid var(--orange);}
+  .section-purple{background:var(--purple-bg);border:2px solid var(--purple);}
+  .section-label{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .score-badge{margin-left:auto;background:rgba(255,255,255,0.1);border-radius:20px;padding:2px 10px;font-size:0.85rem;font-family:'Nunito',sans-serif;font-weight:800;}
+  /* Yellow */
+  .yellow-grid-wrap{display:flex;gap:8px;align-items:flex-start;}
+  .yellow-grid{display:grid;grid-template-columns:repeat(4,44px);gap:4px;}
+  .yellow-col-scores{display:grid;grid-template-columns:repeat(4,44px);gap:4px;margin-top:4px;}
+  .yellow-row-bonuses{display:flex;flex-direction:column;gap:4px;margin-left:4px;}
+  .diag-bonus{margin-top:4px;font-size:0.75rem;color:var(--text-dim);}
+  /* Grid cells */
+  .grid-cell{width:44px;height:44px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;cursor:default;transition:transform 0.1s,box-shadow 0.1s;position:relative;border:2px solid rgba(255,255,255,0.15);}
+  .grid-cell.yellow-cell{background:rgba(245,197,24,0.12);color:var(--yellow);}
+  .grid-cell.blue-cell{background:rgba(58,134,255,0.12);color:var(--blue);}
+  .grid-cell.crossed{background:rgba(255,255,255,0.08)!important;}
+  .grid-cell.crossed::after{content:'✕';position:absolute;font-size:1.4rem;font-weight:900;color:var(--yellow);}
+  .grid-cell.blue-cell.crossed::after{color:var(--blue);}
+  .grid-cell.preprinted-x{background:rgba(245,197,24,0.05)!important;color:var(--yellow-dark);font-size:1.4rem;opacity:0.5;border-color:rgba(245,197,24,0.15);}
+  .grid-cell.selectable{box-shadow:0 0 0 2px var(--yellow),0 0 12px var(--yellow);cursor:pointer;}
+  .grid-cell.blue-cell.selectable{box-shadow:0 0 0 2px var(--blue),0 0 12px var(--blue);}
+  .grid-cell.selectable:hover{transform:scale(1.08);}
+  .col-score-badge{width:44px;height:26px;border-radius:4px;background:var(--yellow-dark);color:#000;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;}
+  .col-score-badge.earned{background:var(--yellow);box-shadow:0 0 8px var(--yellow);}
+  .row-bonus-badge{width:36px;height:44px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;border:2px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.3);}
+  .row-bonus-badge.earned{opacity:0.35;}
+  /* Blue */
+  .blue-grid-wrap{display:flex;flex-direction:column;align-items:flex-start;}
+  .blue-milestones{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
+  .milestone-pip{width:22px;height:22px;border-radius:50%;background:rgba(58,134,255,0.2);border:2px solid var(--blue-dark);display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:800;color:var(--blue);}
+  .milestone-pip.reached{background:var(--blue);color:#000;}
+  .blue-col-bonuses{display:flex;gap:4px;margin-top:4px;}
+  /* Row strips */
+  .row-strip{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .green-pts-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px;}
+  .green-pts-pip{width:42px;height:18px;border-radius:3px;background:rgba(6,214,160,0.12);display:flex;align-items:center;justify-content:center;font-size:0.58rem;font-weight:800;color:var(--green);}
+  .green-pts-pip.reached{background:var(--green);color:#000;}
+  .row-cell{width:42px;height:42px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem;border:2px solid rgba(255,255,255,0.15);position:relative;cursor:default;transition:transform 0.1s,box-shadow 0.1s;}
+  .row-cell.green-cell{background:rgba(6,214,160,0.1);color:var(--green);}
+  .row-cell.orange-cell{background:rgba(251,86,7,0.1);color:var(--orange);}
+  .row-cell.purple-cell{background:rgba(155,93,229,0.1);color:var(--purple);}
+  .row-cell.selectable.green-cell{box-shadow:0 0 0 2px var(--green),0 0 10px var(--green);cursor:pointer;}
+  .row-cell.selectable.orange-cell{box-shadow:0 0 0 2px var(--orange),0 0 10px var(--orange);cursor:pointer;}
+  .row-cell.selectable.purple-cell{box-shadow:0 0 0 2px var(--purple),0 0 10px var(--purple);cursor:pointer;}
+  .row-cell.selectable:hover{transform:scale(1.08);}
+  .cell-bonus{position:absolute;bottom:-1px;right:-1px;font-size:0.55rem;background:rgba(0,0,0,0.7);border-radius:3px;padding:1px 2px;}
+  .cell-mult{position:absolute;top:1px;right:2px;font-size:0.6rem;color:var(--text-dim);font-weight:700;}
+  /* Right panel */
+  .right-panel{display:flex;flex-direction:column;gap:10px;}
+  .panel-card{background:var(--panel);border-radius:var(--radius);padding:12px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+  .panel-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--text-dim);margin-bottom:10px;}
+  /* Dice */
+  .dice-area{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .die{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;cursor:default;transition:transform 0.15s,box-shadow 0.15s;position:relative;border:3px solid transparent;}
+  .die-yellow{background:var(--yellow);color:#000;}
+  .die-blue{background:var(--blue);color:#fff;}
+  .die-green{background:var(--green);color:#000;}
+  .die-orange{background:var(--orange);color:#fff;}
+  .die-purple{background:var(--purple);color:#fff;}
+  .die-white{background:var(--white-die);color:#000;}
+  .die.selectable{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,0.5);cursor:pointer;}
+  .die.selectable:hover{transform:translateY(-4px) scale(1.08);}
+  .die.selected{border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,0.8);transform:translateY(-6px);}
+  .die.dimmed{opacity:0.25;cursor:default;}
+  .die.unplaceable{border-color:#ff4444;opacity:0.65;cursor:pointer;}
+  .die.unplaceable::after{content:'!';position:absolute;top:-5px;right:-5px;width:15px;height:15px;border-radius:50%;background:#ff4444;color:#fff;font-size:0.65rem;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;}
+  .die-label{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:0.6rem;color:var(--text-dim);white-space:nowrap;}
+  /* Phase bar */
+  .phase-bar{background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 12px;text-align:center;font-weight:700;font-size:0.9rem;margin-bottom:4px;}
+  .phase-active{border-left:4px solid var(--yellow);color:var(--yellow);}
+  .phase-passive{border-left:4px solid var(--blue);color:var(--blue);}
+  .phase-bonus{border-left:4px solid var(--green);color:var(--green);}
+  /* Buttons */
+  .btn{padding:8px 14px;border-radius:6px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;transition:transform 0.1s,opacity 0.1s;}
+  .btn:hover:not(:disabled){transform:translateY(-1px);}
+  .btn:disabled{opacity:0.28;cursor:default;}
+  .btn-primary{background:var(--yellow);color:#000;}
+  .btn-secondary{background:rgba(255,255,255,0.1);color:var(--text);}
+  .btn-oops{background:#cc2222;color:#fff;}
+  /* Actions */
+  .action-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .action-pips{display:flex;gap:4px;}
+  .action-pip{width:20px;height:20px;border-radius:50%;border:2px solid var(--text-dim);}
+  .action-pip.circled{background:rgba(255,255,255,0.2);border-color:var(--text);}
+  .action-pip.used::after{content:'✕';display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--orange);height:100%;}
+  .action-label{font-size:0.8rem;color:var(--text-dim);min-width:70px;}
+  /* Score */
+  .score-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85rem;}
+  .score-dot{width:10px;height:10px;border-radius:50%;margin-right:6px;display:inline-block;}
+  .total-row{display:flex;justify-content:space-between;padding-top:8px;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;}
+  /* Round pips */
+  .round-pips{display:flex;gap:6px;justify-content:center;margin-bottom:8px;}
+  .round-pip{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.75rem;}
+  .round-pip.current{background:var(--yellow);color:#000;border-color:var(--yellow);}
+  .round-pip.done{background:rgba(255,255,255,0.15);}
+  /* Log */
+  .log-area{max-height:100px;overflow-y:auto;font-size:0.72rem;color:var(--text-dim);line-height:1.6;}
+  .log-area::-webkit-scrollbar{width:4px;}
+  .log-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px;}
+  /* Modals */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal-box{background:var(--panel);border-radius:12px;padding:24px;max-width:400px;width:100%;border:1px solid rgba(255,255,255,0.1);text-align:center;}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;margin-bottom:12px;}
+  .modal-score-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.9rem;}
+  .modal-total{font-family:'Bebas Neue',sans-serif;font-size:2rem;margin:12px 0;}
+  .modal-rating{font-size:1.1rem;color:var(--yellow);font-weight:800;margin-bottom:16px;}
+  /* Bonus banner — non-blocking top-right */
+  .bonus-overlay{position:fixed;top:12px;right:12px;width:290px;z-index:90;pointer-events:none;}
+  .bonus-overlay.hidden{display:none!important;}
+  .bonus-box{background:var(--panel);border-radius:12px;padding:14px 16px;border:2px solid var(--green);text-align:center;pointer-events:all;box-shadow:0 8px 32px rgba(0,0,0,0.7);}
+  .bonus-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px;margin-bottom:4px;color:var(--green);}
+  .bonus-box p{font-size:0.76rem;color:var(--text-dim);line-height:1.4;}
+  /* Oh My modal */
+  .ohmy-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:110;}
+  .ohmy-box{background:var(--panel);border-radius:12px;padding:22px 26px;max-width:360px;width:90%;border:2px solid #cc3333;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.8);}
+  .ohmy-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#ff6060;margin-bottom:8px;}
+  .ohmy-box p{font-size:0.85rem;color:var(--text-dim);margin-bottom:16px;line-height:1.5;white-space:pre-line;}
+  .hidden{display:none!important;}
+  .tray-label{font-size:0.7rem;color:var(--text-dim);text-align:center;margin-top:4px;}
+  .info-tip{font-size:0.74rem;color:var(--text-dim);text-align:center;margin-top:5px;font-style:italic;}
+  @keyframes rollDie{0%{transform:rotate(0) scale(1);}25%{transform:rotate(12deg) scale(1.1);}50%{transform:rotate(-8deg) scale(0.95);}100%{transform:rotate(0) scale(1);}}
+  .rolling{animation:rollDie 0.3s ease;}
+  @keyframes pop{0%{transform:scale(0.8);opacity:0;}60%{transform:scale(1.1);opacity:1;}100%{transform:scale(1);}}
+  .bonus-pop{animation:pop 0.3s ease forwards;}
 </style>
 </head>
 <body>
-
 <h1>Ganz schön Clever</h1>
 <p class="subtitle">Solo Game — Roll & Write</p>
 
 <div class="game-layout">
-  <!-- LEFT: SCORE SHEET -->
   <div class="scoresheet">
-
-    <!-- YELLOW -->
     <div class="section section-yellow">
-      <div class="section-label" style="color:var(--yellow)">
-        🟡 YELLOW
-        <span class="score-badge" id="yellow-score">0 pts</span>
-      </div>
+      <div class="section-label" style="color:var(--yellow)">🟡 YELLOW<span class="score-badge" id="yellow-score">0 pts</span></div>
       <div class="yellow-grid-wrap">
         <div>
           <div class="yellow-grid" id="yellow-grid"></div>
@@ -508,87 +168,48 @@
         <div class="yellow-row-bonuses" id="yellow-row-bonuses"></div>
       </div>
     </div>
-
-    <!-- BLUE -->
     <div class="section section-blue">
-      <div class="section-label" style="color:var(--blue)">
-        🔵 BLUE
-        <span class="score-badge" id="blue-score">0 pts</span>
-      </div>
+      <div class="section-label" style="color:var(--blue)">🔵 BLUE<span class="score-badge" id="blue-score">0 pts</span></div>
       <div class="blue-milestones" id="blue-milestones"></div>
-      <div class="blue-grid-wrap">
-        <div id="blue-grid-container"></div>
-        <div id="blue-row-bonuses" style="display:none"></div>
-      </div>
+      <div class="blue-grid-wrap"><div id="blue-grid-container"></div></div>
     </div>
-
-    <!-- GREEN -->
     <div class="section section-green">
-      <div class="section-label" style="color:var(--green)">
-        🟢 GREEN
-        <span class="score-badge" id="green-score">0 pts</span>
-      </div>
+      <div class="section-label" style="color:var(--green)">🟢 GREEN<span class="score-badge" id="green-score">0 pts</span></div>
       <div class="green-pts-row" id="green-pts-row"></div>
       <div class="row-strip" id="green-strip"></div>
     </div>
-
-    <!-- ORANGE -->
     <div class="section section-orange">
-      <div class="section-label" style="color:var(--orange)">
-        🟠 ORANGE
-        <span class="score-badge" id="orange-score">0 pts</span>
-      </div>
+      <div class="section-label" style="color:var(--orange)">🟠 ORANGE<span class="score-badge" id="orange-score">0 pts</span></div>
       <div class="row-strip" id="orange-strip"></div>
     </div>
-
-    <!-- PURPLE -->
     <div class="section section-purple">
-      <div class="section-label" style="color:var(--purple)">
-        🟣 PURPLE
-        <span class="score-badge" id="purple-score">0 pts</span>
-      </div>
+      <div class="section-label" style="color:var(--purple)">🟣 PURPLE<span class="score-badge" id="purple-score">0 pts</span></div>
       <div class="row-strip" id="purple-strip"></div>
     </div>
+  </div>
 
-  </div><!-- end scoresheet -->
-
-  <!-- RIGHT PANEL -->
   <div class="right-panel">
-
-    <!-- ROUND / PHASE -->
     <div class="panel-card">
       <div class="panel-title">ROUND TRACKER</div>
       <div class="round-pips" id="round-pips"></div>
-      <div class="phase-bar phase-active" id="phase-bar">Active Player — Roll 1/3</div>
-      <p class="info-tip" id="phase-tip">Roll the dice to start!</p>
+      <div class="phase-bar phase-active" id="phase-bar">Press ROLL to start</div>
+      <p class="info-tip" id="phase-tip"></p>
     </div>
-
-    <!-- DICE -->
     <div class="panel-card">
       <div class="panel-title">DICE</div>
       <div class="dice-area" id="dice-area"></div>
-      <p class="tray-label">🥈 Silver tray (excluded): <span id="tray-count">0</span> dice</p>
-      <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap">
-        <button class="btn btn-primary" id="btn-roll" onclick="rollDice()">🎲 ROLL DICE</button>
+      <p class="tray-label">🥈 Tray: <span id="tray-count">0</span></p>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-roll" onclick="rollDice()">🎲 ROLL</button>
         <button class="btn btn-secondary" id="btn-reroll" onclick="useReroll()" disabled>🔄 REROLL</button>
         <button class="btn btn-secondary" id="btn-extra-die" onclick="useExtraDie()" disabled>➕ EXTRA DIE</button>
       </div>
     </div>
-
-    <!-- ACTIONS -->
     <div class="panel-card">
       <div class="panel-title">ACTIONS</div>
-      <div class="action-row">
-        <span class="action-label">🔄 Reroll</span>
-        <div class="action-pips" id="reroll-pips"></div>
-      </div>
-      <div class="action-row">
-        <span class="action-label">➕ Extra Die</span>
-        <div class="action-pips" id="extra-die-pips"></div>
-      </div>
+      <div class="action-row"><span class="action-label">🔄 Reroll</span><div class="action-pips" id="reroll-pips"></div></div>
+      <div class="action-row"><span class="action-label">➕ Extra Die</span><div class="action-pips" id="extra-die-pips"></div></div>
     </div>
-
-    <!-- SCORE -->
     <div class="panel-card">
       <div class="panel-title">SCORE</div>
       <div class="score-row"><span><span class="score-dot" style="background:var(--yellow)"></span>Yellow</span><span id="sc-yellow">0</span></div>
@@ -599,30 +220,35 @@
       <div class="score-row"><span>🦊 Foxes</span><span id="sc-foxes">0</span></div>
       <div class="total-row"><span>TOTAL</span><span id="sc-total">0</span></div>
     </div>
-
-    <!-- LOG -->
     <div class="panel-card">
       <div class="panel-title">LOG</div>
       <div class="log-area" id="log-area"></div>
     </div>
-
-  </div><!-- end right-panel -->
-</div>
-
-<!-- BONUS PICK BANNER (non-modal, top-right corner, scoresheet stays interactive) -->
-<div class="bonus-overlay hidden" id="bonus-overlay">
-  <div class="bonus-box" id="bonus-box">
-    <h3 id="bonus-title">BONUS TRIGGERED!</h3>
-    <p id="bonus-desc">Choose a field to mark.</p>
-    <button class="btn btn-danger" onclick="cancelBonus()">Skip</button>
   </div>
 </div>
 
-<!-- GAME END MODAL -->
+<!-- Bonus banner — non-blocking, top-right -->
+<div class="bonus-overlay hidden" id="bonus-overlay">
+  <div class="bonus-box" id="bonus-box">
+    <h3 id="bonus-title">BONUS!</h3>
+    <p id="bonus-desc">Click a highlighted field.</p>
+  </div>
+</div>
+
+<!-- Oh My modal — blocking -->
+<div class="ohmy-overlay hidden" id="ohmy-overlay">
+  <div class="ohmy-box">
+    <h3 id="ohmy-title">Oh my!</h3>
+    <p id="ohmy-desc"></p>
+    <button class="btn btn-oops" onclick="ohMyConfirm()">Oh my!</button>
+  </div>
+</div>
+
+<!-- Game end modal -->
 <div class="modal-overlay hidden" id="end-modal">
   <div class="modal-box">
     <div class="modal-title">🎉 GAME OVER!</div>
-    <div class="modal-scores" id="end-scores"></div>
+    <div id="end-scores"></div>
     <div class="modal-total" id="end-total"></div>
     <div class="modal-rating" id="end-rating"></div>
     <button class="btn btn-primary" onclick="resetGame()">PLAY AGAIN</button>
@@ -630,1523 +256,898 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-// GAME STATE
-// ═══════════════════════════════════════════════
-const COLORS = ['yellow','blue','green','orange','purple','white'];
-const DIE_COLORS = ['yellow','blue','green','orange','purple','white'];
-
-// Yellow grid layout [row][col] = value or 'X'
-const YELLOW_LAYOUT = [
-  [3,6,5,'X'],
-  [2,1,'X',5],
-  [1,'X',2,4],
-  ['X',3,4,6]
-];
-const YELLOW_COL_POINTS = [10,14,16,20];
+// ═══════════════════════════════════════
+// GAME DATA (immutable constants)
+// ═══════════════════════════════════════
+const YELLOW_LAYOUT = [[3,6,5,'X'],[2,1,'X',5],[1,'X',2,4],['X',3,4,6]];
+const YELLOW_COL_PTS = [10,14,16,20];
 const YELLOW_ROW_BONUSES = ['blue_X','orange_4','green_X','fox'];
-const YELLOW_DIAG_BONUS = 'extra_die'; // top-left to bottom-right: [0,0],[1,1],[2,2],[3,3]
 
-// Blue grid layout  row 0 has 3 cells (cols 0-2), rows 1-2 have 4 cells
-const BLUE_LAYOUT = [
-  [2,3,4,null],
-  [5,6,7,8],
-  [9,10,11,12]
-];
+const BLUE_LAYOUT = [[2,3,4,null],[5,6,7,8],[9,10,11,12]];
 const BLUE_MILESTONES = [1,2,4,7,11,16,22,29,37,46,56];
 const BLUE_ROW_BONUSES = ['orange_5','yellow_X','fox'];
 const BLUE_COL_BONUSES = ['reroll','green_X','purple_6','extra_die'];
 
-// Green strip
 const GREEN_FIELDS = [
   {cond:1,pts:1},{cond:2,pts:3},{cond:3,pts:6},{cond:4,pts:10,bonus:'extra_die'},
   {cond:5,pts:15},{cond:1,pts:21,bonus:'blue_X'},{cond:2,pts:28,bonus:'fox'},
   {cond:3,pts:36},{cond:4,pts:45,bonus:'purple_6'},{cond:5,pts:55,bonus:'reroll'},{cond:6,pts:66}
 ];
-
-// Orange strip
 const ORANGE_FIELDS = [
-  {mult:1},{mult:1},{mult:1,bonus:'reroll'},{mult:2},{mult:1,bonus:'yellow_X'},
-  {mult:1,bonus:'extra_die'},{mult:2},{mult:1,bonus:'fox'},{mult:2},{mult:1,bonus:'purple_6'},{mult:3}
+  {m:1},{m:1},{m:1,bonus:'reroll'},{m:2},{m:1,bonus:'yellow_X'},
+  {m:1,bonus:'extra_die'},{m:2},{m:1,bonus:'fox'},{m:2},{m:1,bonus:'purple_6'},{m:3}
 ];
-
-// Purple strip
 const PURPLE_FIELDS = [
   {},{},{},{bonus:'reroll'},{bonus:'blue_X'},{bonus:'extra_die'},
   {bonus:'yellow_X'},{bonus:'fox'},{bonus:'reroll'},{bonus:'green_X'},{bonus:'purple_6'},{bonus:'extra_die'}
 ];
+const ROUND_BONUSES = ['reroll','extra_die','reroll','black_any',null,null];
 
-let state = {};
+const BONUS_DESC = {
+  yellow_X:  {title:'🟡 YELLOW BONUS', desc:'Click any free Yellow cell — it will be marked ✕.'},
+  blue_X:    {title:'🔵 BLUE BONUS',   desc:'Click any free Blue cell — it will be marked ✕.'},
+  green_X:   {title:'🟢 GREEN BONUS',  desc:'Click the next Green cell to mark it.'},
+  orange_4:  {title:'🟠 ORANGE BONUS', desc:'Click the next Orange cell to place a 4 (×multiplier).'},
+  orange_5:  {title:'🟠 ORANGE BONUS', desc:'Click the next Orange cell to place a 5 (×multiplier).'},
+  purple_6:  {title:'🟣 PURPLE BONUS', desc:'Click the next Purple cell to place a 6.'},
+  black_any: {title:'⬛ ROUND 4 BONUS', desc:'Click any free cell in any area.\nYellow/Blue → ✕ | Green/Orange/Purple → 6'},
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let S = {};
 
 function initState() {
-  state = {
-    round: 1,        // 1-6
-    maxRounds: 6,
-    isActive: true,  // true = active phase, false = passive phase
-    rollCount: 0,    // 0=not rolled, 1,2,3
-    maxRolls: 3,
+  S = {
+    round:1, maxRounds:6,
+    isActive:true,
+    rollCount:0,         // increments each normal roll (not reroll)
+    turnOver:false,      // active phase done; waiting to roll passive
+    nextRollAllowed:false, // true when no candidate is placeable → roll enabled immediately
+    placedThisRoll:false,  // placed a die in this roll → must roll before next pick
+    passiveExpanded:false, // passive: all 6 dice available (tray had none placeable)
 
-    dice: [], // [{color, value, onTray, onSheet, selected}]
-    selectedDieIdx: -1,
-    awaitingPlacement: false, // after die selected, waiting for board click
-    awaitingExtraDie: false,  // waiting to pick extra die from any pool
-    turnOver: false,
-    mustRoll: false,          // after placing a die mid-turn, must roll before selecting next
+    dice:[], // {color,value,onTray,onSheet,selected,extraUsed}
+    selIdx:-1,
+    awaitingPlacement:false,
+    awaitingExtraDie:false,
 
     // Score sheet
-    yellow: {
-      // Pre-fill X cells as already crossed — they are printed on the sheet and cannot be placed on
-      crossed: Array.from({length:4}, (_, r) => Array.from({length:4}, (_, c) => YELLOW_LAYOUT[r][c] === 'X')),
-      colEarned: [false,false,false,false],
-      rowBonusEarned: [false,false,false,false],
-      diagEarned: false
+    yellow:{
+      crossed:Array.from({length:4},(_,r)=>Array.from({length:4},(_,c)=>YELLOW_LAYOUT[r][c]==='X')),
+      colEarned:[false,false,false,false],
+      rowEarned:[false,false,false,false],
+      diagEarned:false
     },
-    blue: {
-      crossed: Array.from({length:3}, ()=> Array(4).fill(false)),
-      rowBonusEarned: [false,false,false],
-      colBonusEarned: [false,false,false,false]
+    blue:{
+      crossed:Array.from({length:3},()=>Array(4).fill(false)),
+      rowEarned:[false,false,false],
+      colEarned:[false,false,false,false]
     },
-    green: { filled: Array(11).fill(null), next: 0 },
-    orange: { filled: Array(11).fill(null), next: 0 },
-    purple: { filled: Array(12).fill(null), next: 0 },
+    green:{filled:Array(11).fill(null),next:0},
+    orange:{filled:Array(11).fill(null),next:0},
+    purple:{filled:Array(12).fill(null),next:0},
 
-    // Actions
-    rerollCircled: 0, rerollUsed: 0,
-    extraDieCircled: 0, extraDieUsed: 0,
-    extraDieUsedThisTurn: new Set(), // indices of dice already picked as extra this turn
+    rerollCircled:0, rerollUsed:0,
+    extraCircled:0, extraUsed:0,
+    foxCount:0,
 
-    // Foxes
-    foxCount: 0,
+    bonusQueue:[],
+    processingBonus:false,
+    bonusMode:null,  // current active bonus type, or null
 
-    // Pending bonus queue
-    bonusQueue: [],
-    processingBonus: false,
-
-    // Game over
-    gameOver: false,
-
-    // Round start bonuses
-    roundBonusGiven: false,
-
-    log: [],
+    roundBonusGiven:false,
+    gameOver:false,
+    log:[],
+    ohmyCb:null,
   };
 }
 
-// ═══════════════════════════════════════════════
-// ROUND START BONUSES
-// Rounds 1-3 give fixed bonuses; round 4 gives choice
-// For solo we just give them automatically
-// ═══════════════════════════════════════════════
-const ROUND_BONUSES = [
-  'reroll',     // round 1
-  'extra_die',  // round 2
-  'reroll',     // round 3
-  'black_any',  // round 4: mark any free field (yellow/blue→X, green/orange/purple→6)
-  'reroll',     // round 5
-  'extra_die',  // round 6
-];
+// ═══════════════════════════════════════
+// PLACABILITY ENGINE
+// ═══════════════════════════════════════
 
-function giveRoundBonus(round) {
-  const bonus = ROUND_BONUSES[round - 1];
-  applyBonus(bonus, 'Round ' + round + ' start bonus');
+function getBlueSum(idx) {
+  const d = S.dice[idx];
+  const blue  = S.dice.find(x=>x.color==='blue');
+  const white = S.dice.find(x=>x.color==='white');
+  if (d.color==='blue')  return d.value + (white?white.value:0);
+  if (d.color==='white') return d.value + (blue?blue.value:0);
+  return 0;
 }
 
-// ═══════════════════════════════════════════════
-// DICE
-// ═══════════════════════════════════════════════
-function rollSingle() {
-  return Math.floor(Math.random()*6)+1;
+function dieCanGoYellow(i) {
+  const d=S.dice[i];
+  if (d.color!=='yellow'&&d.color!=='white') return false;
+  for (let r=0;r<4;r++) for (let c=0;c<4;c++)
+    if (!S.yellow.crossed[r][c] && YELLOW_LAYOUT[r][c]!=='X' && d.value===YELLOW_LAYOUT[r][c]) return true;
+  return false;
+}
+function dieCanGoBlue(i) {
+  const d=S.dice[i];
+  if (d.color!=='blue'&&d.color!=='white') return false;
+  const sum=getBlueSum(i);
+  for (let r=0;r<3;r++) for (let c=0;c<4;c++)
+    if (BLUE_LAYOUT[r][c]!==null&&!S.blue.crossed[r][c]&&BLUE_LAYOUT[r][c]===sum) return true;
+  return false;
+}
+function dieCanGoGreen(i) {
+  const d=S.dice[i];
+  if (d.color!=='green'&&d.color!=='white') return false;
+  const n=S.green.next;
+  return n<GREEN_FIELDS.length && d.value>=GREEN_FIELDS[n].cond;
+}
+function dieCanGoOrange(i) {
+  const d=S.dice[i];
+  if (d.color!=='orange'&&d.color!=='white') return false;
+  return S.orange.next<ORANGE_FIELDS.length;
+}
+function dieCanGoPurple(i) {
+  const d=S.dice[i];
+  if (d.color!=='purple'&&d.color!=='white') return false;
+  const n=S.purple.next;
+  if (n>=PURPLE_FIELDS.length) return false;
+  if (n===0) return true;
+  const prev=S.purple.filled[n-1];
+  return prev===6 || d.value>prev;
+}
+function dieIsPlaceable(i) {
+  return dieCanGoYellow(i)||dieCanGoBlue(i)||dieCanGoGreen(i)||dieCanGoOrange(i)||dieCanGoPurple(i);
 }
 
-function createDice() {
-  state.dice = ['yellow','blue','green','orange','purple','white'].map(color => ({
-    color, value: rollSingle(), onTray: false, onSheet: false, selected: false
-  }));
+function getCandidates() {
+  if (S.awaitingExtraDie)
+    return S.dice.map((_,i)=>i).filter(i=>!S.dice[i].extraUsed);
+  if (!S.isActive) {
+    if (S.passiveExpanded) return S.dice.map((_,i)=>i).filter(i=>!S.dice[i].onSheet);
+    return S.dice.map((_,i)=>i).filter(i=>S.dice[i].onTray);
+  }
+  return S.dice.map((_,i)=>i).filter(i=>!S.dice[i].onTray&&!S.dice[i].onSheet);
 }
 
-function rollDice() {
-  if (state.gameOver) return;
-
-  if (state.awaitingPlacement || state.awaitingExtraDie) {
-    addLog('⚠ Finish current selection first.');
-    return;
-  }
-
-  // Active turn is done — ROLL starts the passive phase
-  if (state.isActive && state.turnOver) {
-    state.isActive = false;
-    state.rollCount = 0;
-    state.turnOver = false;
-    state.extraDieUsedThisTurn = new Set();
-    // Fall through to passive roll below
-    addLog('--- Passive phase ---');
-  }
-
-  // First roll of active phase: setup
-  if (state.isActive && state.rollCount === 0) {
-    if (!state.roundBonusGiven) {
-      giveRoundBonus(state.round);
-      state.roundBonusGiven = true;
-    }
-    createDice();
-    state.rollCount = 1;
-    animateDice();
-    addLog(`Round ${state.round} — Active roll 1`);
-    updateUI();
-    return;
-  }
-
-  // Subsequent active rolls (2 or 3): only roll non-tray, non-sheet dice
-  if (state.isActive && state.rollCount >= 1 && state.rollCount < 3) {
-    const available = state.dice.filter(d => !d.onTray && !d.onSheet);
-    if (available.length === 0) {
-      addLog('No dice left to roll.');
-      endActiveTurn();
-      return;
-    }
-    available.forEach(d => { d.value = rollSingle(); });
-    state.rollCount++;
-    state.mustRoll = false;
-    animateDice();
-    addLog(`Active roll ${state.rollCount}`);
-    updateUI();
-    return;
-  }
-
-  // Passive phase: roll all 6 fresh dice, put 3 lowest on tray (random tiebreak)
-  if (!state.isActive && state.rollCount === 0) {
-    createDice();
-    // Sort by value; for ties at the boundary (position 2→3), shuffle equal-value dice randomly
-    const indexed = state.dice.map((d, i) => ({ d, i }));
-    indexed.sort((a, b) => a.d.value !== b.d.value
-      ? a.d.value - b.d.value
-      : Math.random() - 0.5); // random tiebreak
-    for (let i = 0; i < 3; i++) indexed[i].d.onTray = true;
-    state.rollCount = 1;
-    animateDice();
-    const trayVals = indexed.slice(0,3).map(x => x.d.value).join(', ');
-    addLog(`Passive roll — tray: [${trayVals}] — pick one`);
-    updateUI();
-    return;
-  }
-
-  addLog('Nothing to roll right now.');
+function anyPlaceable() {
+  return getCandidates().some(i=>dieIsPlaceable(i));
 }
 
-function animateDice() {
-  document.querySelectorAll('.die').forEach(el => {
-    el.classList.remove('rolling');
-    void el.offsetWidth;
-    el.classList.add('rolling');
-    setTimeout(() => el.classList.remove('rolling'), 350);
-  });
+// ═══════════════════════════════════════
+// BONUS PLACABILITY
+// ═══════════════════════════════════════
+function bonusHasField(bonus) {
+  if (bonus==='yellow_X') return availYellow().length>0;
+  if (bonus==='blue_X')   return availBlue().length>0;
+  if (bonus==='green_X')  return S.green.next<GREEN_FIELDS.length;
+  if (bonus==='orange_4'||bonus==='orange_5') return S.orange.next<ORANGE_FIELDS.length;
+  if (bonus==='purple_6') return S.purple.next<PURPLE_FIELDS.length;
+  if (bonus==='black_any') return availYellow().length>0||availBlue().length>0||
+      S.green.next<GREEN_FIELDS.length||S.orange.next<ORANGE_FIELDS.length||S.purple.next<PURPLE_FIELDS.length;
+  return true; // reroll, extra_die, fox
 }
 
-function selectDie(idx) {
-  if (state.gameOver) return;
-  const d = state.dice[idx];
-  if (state.rollCount === 0) { addLog('Roll first!'); return; }
-  if (state.mustRoll) { addLog('Roll the dice before selecting another die!'); return; }
+function availYellow() {
+  const r=[];
+  for (let row=0;row<4;row++) for (let col=0;col<4;col++)
+    if (YELLOW_LAYOUT[row][col]!=='X'&&!S.yellow.crossed[row][col]) r.push([row,col]);
+  return r;
+}
+function availBlue() {
+  const r=[];
+  for (let row=0;row<3;row++) for (let col=0;col<4;col++)
+    if (BLUE_LAYOUT[row][col]!==null&&!S.blue.crossed[row][col]) r.push([row,col]);
+  return r;
+}
 
-  if (state.awaitingExtraDie) {
-    executeExtraDie(idx);
-    return;
-  }
+// ═══════════════════════════════════════
+// OH MY MODAL
+// ═══════════════════════════════════════
+function showOhMy(title, desc, cb) {
+  S.ohmyCb=cb;
+  document.getElementById('ohmy-title').textContent=title;
+  document.getElementById('ohmy-desc').textContent=desc;
+  document.getElementById('ohmy-overlay').classList.remove('hidden');
+}
+function ohMyConfirm() {
+  document.getElementById('ohmy-overlay').classList.add('hidden');
+  const cb=S.ohmyCb; S.ohmyCb=null;
+  if (cb) cb();
+}
 
-  // Deselect if clicking the already-selected die
-  if (state.awaitingPlacement && state.selectedDieIdx === idx) {
-    d.selected = false;
-    state.selectedDieIdx = -1;
-    state.awaitingPlacement = false;
-    addLog(`Deselected ${d.color.toUpperCase()} die`);
-    updateUI();
-    return;
-  }
-
-  // Passive phase: only tray dice are selectable
-  if (!state.isActive) {
-    if (!d.onTray) { addLog('Passive phase: pick from the silver tray only.'); return; }
+// ═══════════════════════════════════════
+// AFTER ROLL — check placability
+// ═══════════════════════════════════════
+function afterRoll() {
+  S.placedThisRoll=false;
+  if (!anyPlaceable()) {
+    S.nextRollAllowed=true;
+    showOhMy('No Valid Dice','None of the available dice can be placed.',()=>updateUI());
   } else {
-    // Active phase: tray and sheet dice are not selectable normally
-    if (d.onTray || d.onSheet) return;
+    S.nextRollAllowed=false;
   }
-
-  // Switch selection if a different die was already selected
-  if (state.awaitingPlacement) {
-    state.dice.forEach(x => x.selected = false);
-  }
-  d.selected = true;
-  state.selectedDieIdx = idx;
-  state.awaitingPlacement = true;
-  addLog(`Selected ${d.color.toUpperCase()} die (${d.value})`);
   updateUI();
 }
 
-// After die selected, mark it placed and handle tray/turn-end logic
-function commitDie(idx) {
-  const d = state.dice[idx];
-  d.selected = false;
-  state.selectedDieIdx = -1;
-  state.awaitingPlacement = false;
+// ═══════════════════════════════════════
+// ROLL DICE
+// ═══════════════════════════════════════
+function rollSingle(){return Math.floor(Math.random()*6)+1;}
+function anim(){document.querySelectorAll('.die').forEach(el=>{el.classList.remove('rolling');void el.offsetWidth;el.classList.add('rolling');setTimeout(()=>el.classList.remove('rolling'),350);});}
 
-  const wasExtraDie = state.extraDieUsedThisTurn.has(idx);
+function rollDice() {
+  if (S.gameOver||S.awaitingPlacement||S.awaitingExtraDie||S.processingBonus) return;
 
-  if (!wasExtraDie) {
-    // Normal placement during active turn: mark on sheet and apply tray rule
-    d.onSheet = true;
-    if (state.isActive) {
-      // Dice with lower value go to tray
-      state.dice.forEach(other => {
-        if (!other.onSheet && !other.onTray && other.value < d.value) {
-          other.onTray = true;
-        }
-      });
-      // Check if turn should end
-      const sheetCount = state.dice.filter(x => x.onSheet).length;
-      if (sheetCount >= 3) {
-        endActiveTurn();
-      } else if (state.rollCount >= 3) {
-        state.dice.forEach(d => { if (!d.onSheet) d.onTray = true; });
-        endActiveTurn();
-      } else {
-        // Turn continues — player must roll before selecting another die
-        state.mustRoll = true;
-      }
-    } else {
-      // Passive: chose one die, done
-      endPassiveTurn();
+  // Active turnOver → transition to passive phase AND immediately roll in one click
+  if (S.isActive&&S.turnOver) {
+    S.isActive=false; S.rollCount=0; S.turnOver=false;
+    S.passiveExpanded=false; S.nextRollAllowed=false; S.placedThisRoll=false;
+    S.dice.forEach(d=>{d.onTray=false;d.onSheet=false;d.selected=false;d.extraUsed=false;});
+    addLog('--- Passive phase ---');
+    // Fall through immediately to passive roll below (no return)
+  }
+
+  // Passive roll
+  if (!S.isActive&&S.rollCount===0) {
+    S.dice=['yellow','blue','green','orange','purple','white'].map(color=>({color,value:rollSingle(),onTray:false,onSheet:false,selected:false,extraUsed:false}));
+    const sorted=[...S.dice].sort((a,b)=>a.value!==b.value?a.value-b.value:Math.random()-0.5);
+    for (let i=0;i<3;i++) sorted[i].onTray=true;
+    S.rollCount=1; anim();
+    addLog(`Passive — tray: [${S.dice.filter(d=>d.onTray).map(d=>d.value).join(',')}]`);
+    // Check tray placeability
+    const trayIdx=S.dice.map((_,i)=>i).filter(i=>S.dice[i].onTray);
+    if (!trayIdx.some(i=>dieIsPlaceable(i))) {
+      S.passiveExpanded=true;
+      addLog('No tray die placeable — all dice available');
     }
+    afterRoll(); return;
+  }
+
+  // Active first roll
+  if (S.isActive&&S.rollCount===0) {
+    if (!S.roundBonusGiven) {
+      S.roundBonusGiven=true;
+      const rb=ROUND_BONUSES[S.round-1];
+      if (rb) {
+        applyBonus(rb);
+        if (S.processingBonus) return; // bonus pick pending, wait
+      }
+    }
+    S.dice=['yellow','blue','green','orange','purple','white'].map(color=>({color,value:rollSingle(),onTray:false,onSheet:false,selected:false,extraUsed:false}));
+    S.rollCount=1; anim();
+    addLog(`Active roll 1`); afterRoll(); return;
+  }
+
+  // Active subsequent roll
+  if (S.isActive&&!S.turnOver&&S.rollCount>0&&S.rollCount<3) {
+    const free=S.dice.filter(d=>!d.onTray&&!d.onSheet);
+    if (!free.length){endActiveTurn();return;}
+    free.forEach(d=>{d.value=rollSingle();});
+    S.rollCount++; anim();
+    addLog(`Active roll ${S.rollCount}`); afterRoll(); return;
+  }
+}
+
+function useReroll() {
+  if (S.rerollCircled-S.rerollUsed<=0) return;
+  const free=S.dice.filter(d=>!d.onTray&&!d.onSheet);
+  if (!free.length){addLog('No dice to reroll');return;}
+  free.forEach(d=>{d.value=rollSingle();}); S.rerollUsed++;
+  anim(); addLog('Reroll used'); afterRoll();
+}
+
+function useExtraDie() {
+  if (S.awaitingExtraDie){S.awaitingExtraDie=false;addLog('Extra die cancelled');updateUI();return;}
+  S.awaitingExtraDie=true; updateUI();
+}
+
+// ═══════════════════════════════════════
+// SELECT DIE
+// ═══════════════════════════════════════
+function selectDie(i) {
+  if (S.gameOver) return;
+  const d=S.dice[i];
+
+  if (S.awaitingExtraDie) {
+    if (d.extraUsed) return;
+    if (!dieIsPlaceable(i)){addLog(`${d.color.toUpperCase()} (${d.value}) has no valid placement.`);return;}
+    d.extraUsed=true; S.extraUsed++;
+    S.awaitingExtraDie=false;
+    S.selIdx=i; d.selected=true; S.awaitingPlacement=true;
+    addLog(`Extra die: ${d.color.toUpperCase()} (${d.value})`); updateUI(); return;
+  }
+
+  // Deselect
+  if (S.awaitingPlacement&&S.selIdx===i) {
+    d.selected=false; S.selIdx=-1; S.awaitingPlacement=false;
+    addLog('Deselected'); updateUI(); return;
+  }
+
+  // Passive candidate check
+  if (!S.isActive) {
+    if (S.passiveExpanded?d.onSheet:!d.onTray) return;
   } else {
-    // Extra Die placement — turn is already over, just log; stay in turnOver state
-    addLog(`Extra Die placed ✓ — ${state.extraDieCircled - state.extraDieUsed} action(s) remaining`);
-    updateUI();
-    // If no more extra die actions or user manually done, checkPhaseTransition is ready
-    // but don't auto-proceed — let user press buttons
+    if (d.onTray||d.onSheet) return;
+  }
+
+  if (S.awaitingPlacement) S.dice.forEach(x=>x.selected=false);
+  d.selected=true; S.selIdx=i; S.awaitingPlacement=true;
+  addLog(`Selected ${d.color.toUpperCase()} (${d.value})`); updateUI();
+}
+
+// ═══════════════════════════════════════
+// COMMIT DIE
+// ═══════════════════════════════════════
+function commitDie(i) {
+  const d=S.dice[i];
+  const wasExtra=d.extraUsed&&!d.onSheet;
+  d.selected=false; S.selIdx=-1; S.awaitingPlacement=false;
+
+  if (wasExtra) {
+    addLog(`Extra die placed ✓ (${S.extraCircled-S.extraUsed} left)`);
+    updateUI(); return;
+  }
+  d.onSheet=true;
+
+  if (S.isActive) {
+    S.dice.forEach(o=>{if(!o.onSheet&&!o.onTray&&o.value<d.value)o.onTray=true;});
+    S.placedThisRoll=true; S.nextRollAllowed=false;
+    const sheets=S.dice.filter(x=>x.onSheet).length;
+    if (sheets>=3||S.rollCount>=3) endActiveTurn();
+    else updateUI();
+  } else {
+    endPassiveTurn();
   }
 }
 
 function endActiveTurn() {
-  // Remaining non-placed dice go to tray
-  state.dice.forEach(d => { if (!d.onSheet) d.onTray = true; });
-  state.turnOver = true;
-  const avail = state.extraDieCircled - state.extraDieUsed;
-  addLog(avail > 0 ? `Active turn done — ${avail} Extra Die action(s) available. Press ROLL when ready for passive phase.` : 'Active turn done — press ROLL for passive phase.');
+  S.dice.forEach(d=>{if(!d.onSheet)d.onTray=true;}); S.turnOver=true;
+  const av=S.extraCircled-S.extraUsed;
+  addLog(av>0?`Active done — ${av} extra die. Press ROLL for passive.`:'Active done — press ROLL for passive.');
   updateUI();
-  // No auto-transition: player must press ROLL to start passive phase
 }
-
 function endPassiveTurn() {
-  state.turnOver = true;
-  addLog('Passive turn done.');
-  updateUI();
-  // No auto-transition: advance round immediately (passive has no extra actions)
-  setTimeout(() => advanceRound(), 600);
+  S.turnOver=false; addLog('Passive done.'); updateUI();
+  setTimeout(()=>advanceRound(),500);
 }
-
 function advanceRound() {
-  state.round++;
-  if (state.round > state.maxRounds) {
-    endGame();
-    return;
+  S.round++;
+  if (S.round>S.maxRounds){endGame();return;}
+  S.isActive=true; S.rollCount=0; S.turnOver=false;
+  S.nextRollAllowed=false; S.placedThisRoll=false; S.passiveExpanded=false; S.roundBonusGiven=false;
+  S.dice.forEach(d=>{d.onTray=false;d.onSheet=false;d.selected=false;d.extraUsed=false;});
+  addLog(`=== Round ${S.round} ===`); updateUI();
+}
+
+// ═══════════════════════════════════════
+// PLACEMENT
+// ═══════════════════════════════════════
+function canPlaceY(r,c){
+  if (!S.awaitingPlacement) return false;
+  const d=S.dice[S.selIdx];
+  if (d.color!=='yellow'&&d.color!=='white') return false;
+  if (S.yellow.crossed[r][c]||YELLOW_LAYOUT[r][c]==='X') return false;
+  return d.value===YELLOW_LAYOUT[r][c];
+}
+function placeY(r,c){
+  if (!canPlaceY(r,c)) return;
+  S.yellow.crossed[r][c]=true; addLog(`Yellow[${r},${c}]=${YELLOW_LAYOUT[r][c]}`);
+  checkYBonuses(r,c); commitDie(S.selIdx); updateScores(); updateUI();
+}
+
+function canPlaceB(r,c){
+  if (!S.awaitingPlacement) return false;
+  const d=S.dice[S.selIdx];
+  if (d.color!=='blue'&&d.color!=='white') return false;
+  if (S.blue.crossed[r][c]||BLUE_LAYOUT[r][c]===null) return false;
+  return getBlueSum(S.selIdx)===BLUE_LAYOUT[r][c];
+}
+function placeB(r,c){
+  if (!canPlaceB(r,c)) return;
+  S.blue.crossed[r][c]=true; addLog(`Blue[${r},${c}]=${BLUE_LAYOUT[r][c]}`);
+  checkBBonuses(r,c); commitDie(S.selIdx); updateScores(); updateUI();
+}
+
+function placeG(){
+  const n=S.green.next;
+  if (!S.awaitingPlacement||n>=GREEN_FIELDS.length) return;
+  const d=S.dice[S.selIdx];
+  if (d.color!=='green'&&d.color!=='white') return;
+  if (d.value<GREEN_FIELDS[n].cond){addLog(`Green: need ≥${GREEN_FIELDS[n].cond}`);updateUI();return;}
+  S.green.filled[n]=d.value; S.green.next++;
+  addLog(`Green[${n}]=${d.value}`);
+  if (GREEN_FIELDS[n].bonus) queueBonus(GREEN_FIELDS[n].bonus);
+  commitDie(S.selIdx); updateScores(); updateUI();
+}
+
+function placeO(){
+  const n=S.orange.next;
+  if (!S.awaitingPlacement||n>=ORANGE_FIELDS.length) return;
+  const d=S.dice[S.selIdx];
+  if (d.color!=='orange'&&d.color!=='white') return;
+  const m=ORANGE_FIELDS[n].m||1;
+  S.orange.filled[n]=d.value*m; S.orange.next++;
+  addLog(`Orange[${n}]=${d.value}×${m}=${d.value*m}`);
+  if (ORANGE_FIELDS[n].bonus) queueBonus(ORANGE_FIELDS[n].bonus);
+  commitDie(S.selIdx); updateScores(); updateUI();
+}
+
+function placeP(){
+  const n=S.purple.next;
+  if (!S.awaitingPlacement||n>=PURPLE_FIELDS.length) return;
+  const d=S.dice[S.selIdx];
+  if (d.color!=='purple'&&d.color!=='white') return;
+  if (n>0&&S.purple.filled[n-1]!==6&&d.value<=S.purple.filled[n-1]){
+    addLog(`Purple: ${d.value} must be > ${S.purple.filled[n-1]}`);updateUI();return;
   }
-  state.isActive = true;
-  state.rollCount = 0;
-  state.turnOver = false;
-  state.roundBonusGiven = false;
-  state.extraDieUsedThisTurn = new Set();
-  // Reset die states
-  state.dice.forEach(d => { d.onTray = false; d.onSheet = false; d.selected = false; });
-  addLog(`=== Round ${state.round} ===`);
-  updateUI();
+  S.purple.filled[n]=d.value; S.purple.next++;
+  addLog(`Purple[${n}]=${d.value}`);
+  if (PURPLE_FIELDS[n].bonus) queueBonus(PURPLE_FIELDS[n].bonus);
+  commitDie(S.selIdx); updateScores(); updateUI();
 }
 
-// ═══════════════════════════════════════════════
-// PLACING ON BOARD
-// ═══════════════════════════════════════════════
-function placeOnYellow(row, col) {
-  if (!canPlaceYellow(row, col)) return;
-  const d = state.dice[state.selectedDieIdx];
-  state.yellow.crossed[row][col] = true;
-  addLog(`Yellow [${row},${col}] = ${YELLOW_LAYOUT[row][col]}`);
-  commitDie(state.selectedDieIdx);
-  checkYellowBonuses(row, col);
-  updateScores();
-  updateUI();
-}
-
-function canPlaceYellow(row, col) {
-  if (!state.awaitingPlacement) return false;
-  const d = state.dice[state.selectedDieIdx];
-  if (d.color !== 'yellow' && d.color !== 'white') return false;
-  if (state.yellow.crossed[row][col]) return false; // already filled (incl. pre-printed X cells)
-  if (YELLOW_LAYOUT[row][col] === 'X') return false; // X cells are pre-filled, never placeable
-  return d.value === YELLOW_LAYOUT[row][col];
-}
-
-function checkYellowBonuses(row, col) {
-  // Row/col/diag completion: X cells start pre-crossed, so all 4 cells being crossed
-  // naturally means the 3 number cells + the 1 pre-printed X are all filled.
-  if (!state.yellow.rowBonusEarned[row]) {
-    const allCrossed = state.yellow.crossed[row].every(v => v);
-    if (allCrossed) {
-      state.yellow.rowBonusEarned[row] = true;
-      const bonus = YELLOW_ROW_BONUSES[row];
-      addLog(`Yellow row ${row} complete → bonus: ${bonus}`);
-      queueBonus(bonus);
-    }
-  }
-  if (!state.yellow.colEarned[col]) {
-    const colComplete = [0,1,2,3].every(r => state.yellow.crossed[r][col]);
-    if (colComplete) {
-      state.yellow.colEarned[col] = true;
-      addLog(`Yellow col ${col} complete → +${YELLOW_COL_POINTS[col]} pts`);
-    }
-  }
-  if (!state.yellow.diagEarned) {
-    const diagComplete = [0,1,2,3].every(i => state.yellow.crossed[i][i]);
-    if (diagComplete) {
-      state.yellow.diagEarned = true;
-      addLog('Yellow diagonal complete → extra_die');
-      queueBonus('extra_die');
-    }
-  }
-}
-
-function placeOnBlue(row, col) {
-  if (!canPlaceBlue(row, col)) return;
-  state.blue.crossed[row][col] = true;
-  addLog(`Blue [${row},${col}] = ${BLUE_LAYOUT[row][col]}`);
-  commitDie(state.selectedDieIdx);
-  checkBlueBonuses(row, col);
-  updateScores();
-  updateUI();
-}
-
-function blueValue() {
-  const d = state.dice[state.selectedDieIdx];
-  const whiteD = state.dice.find(x => x.color === 'white');
-  const blueD  = state.dice.find(x => x.color === 'blue');
-  if (d.color === 'blue') return d.value + (whiteD ? whiteD.value : 0);
-  if (d.color === 'white') return d.value + (blueD ? blueD.value : 0);
-  return 0;
-}
-
-function canPlaceBlue(row, col) {
-  if (!state.awaitingPlacement) return false;
-  const d = state.dice[state.selectedDieIdx];
-  if (d.color !== 'blue' && d.color !== 'white') return false;
-  if (state.blue.crossed[row][col]) return false;
-  if (BLUE_LAYOUT[row][col] === null) return false;
-  const needed = BLUE_LAYOUT[row][col];
-  const sum = blueValue();
-  return sum === needed;
-}
-
-function checkBlueBonuses(row, col) {
-  // Row bonuses
-  if (!state.blue.rowBonusEarned[row]) {
-    const rowLen = BLUE_LAYOUT[row].filter(v => v !== null).length;
-    const rowCrossed = state.blue.crossed[row].filter((v,c) => BLUE_LAYOUT[row][c] !== null && v).length;
-    if (rowCrossed >= rowLen) {
-      state.blue.rowBonusEarned[row] = true;
-      addLog(`Blue row ${row} complete → ${BLUE_ROW_BONUSES[row]}`);
-      queueBonus(BLUE_ROW_BONUSES[row]);
-    }
-  }
-  // Col bonuses
-  if (!state.blue.colBonusEarned[col]) {
-    const colComplete = [0,1,2].every(r => BLUE_LAYOUT[r][col] === null || state.blue.crossed[r][col]);
-    if (colComplete) {
-      state.blue.colBonusEarned[col] = true;
-      addLog(`Blue col ${col} complete → ${BLUE_COL_BONUSES[col]}`);
-      queueBonus(BLUE_COL_BONUSES[col]);
-    }
-  }
-}
-
-function placeOnGreen(value) {
-  const idx = state.green.next;
-  if (idx >= GREEN_FIELDS.length) return;
-  if (!state.awaitingPlacement) return;
-  const d = state.dice[state.selectedDieIdx];
-  if (d.color !== 'green' && d.color !== 'white') return;
-  if (d.value < GREEN_FIELDS[idx].cond) { addLog(`Green: need ≥${GREEN_FIELDS[idx].cond}, got ${d.value}`); updateUI(); return; }
-  state.green.filled[idx] = d.value;
-  state.green.next++;
-  addLog(`Green [${idx}] = ${d.value}`);
-  commitDie(state.selectedDieIdx);
-  if (GREEN_FIELDS[idx].bonus) {
-    addLog(`Green bonus: ${GREEN_FIELDS[idx].bonus}`);
-    queueBonus(GREEN_FIELDS[idx].bonus);
-  }
-  updateScores(); updateUI();
-}
-
-function placeOnOrange(value) {
-  const idx = state.orange.next;
-  if (idx >= ORANGE_FIELDS.length) return;
-  if (!state.awaitingPlacement) return;
-  const d = state.dice[state.selectedDieIdx];
-  if (d.color !== 'orange' && d.color !== 'white') return;
-  const mult = ORANGE_FIELDS[idx].mult || 1;
-  state.orange.filled[idx] = d.value * mult;
-  state.orange.next++;
-  addLog(`Orange [${idx}] = ${d.value}×${mult} = ${d.value * mult}`);
-  commitDie(state.selectedDieIdx);
-  if (ORANGE_FIELDS[idx].bonus) {
-    addLog(`Orange bonus: ${ORANGE_FIELDS[idx].bonus}`);
-    queueBonus(ORANGE_FIELDS[idx].bonus);
-  }
-  updateScores(); updateUI();
-}
-
-function placeOnPurple(value) {
-  const idx = state.purple.next;
-  if (idx >= PURPLE_FIELDS.length) return;
-  if (!state.awaitingPlacement) return;
-  const d = state.dice[state.selectedDieIdx];
-  if (d.color !== 'purple' && d.color !== 'white') return;
-  // Check ascending rule
-  if (idx > 0) {
-    const prev = state.purple.filled[idx - 1];
-    if (prev !== 6 && d.value <= prev) {
-      addLog(`Purple: ${d.value} must be > ${prev} (unless previous was 6)`);
-      updateUI(); // keep die selected so player can deselect it
-      return;
-    }
-  }
-  state.purple.filled[idx] = d.value;
-  state.purple.next++;
-  addLog(`Purple [${idx}] = ${d.value}`);
-  commitDie(state.selectedDieIdx);
-  if (PURPLE_FIELDS[idx].bonus) {
-    addLog(`Purple bonus: ${PURPLE_FIELDS[idx].bonus}`);
-    queueBonus(PURPLE_FIELDS[idx].bonus);
-  }
-  updateScores(); updateUI();
-}
-
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // BONUS SYSTEM
-// ═══════════════════════════════════════════════
-function queueBonus(bonus) {
-  state.bonusQueue.push(bonus);
-  if (!state.processingBonus) {
-    processNextBonus();
-  }
+// ═══════════════════════════════════════
+function queueBonus(b){S.bonusQueue.push(b);if(!S.processingBonus)processNext();}
+
+function processNext(){
+  if (!S.bonusQueue.length){S.processingBonus=false;updateUI();return;}
+  S.processingBonus=true;
+  applyBonus(S.bonusQueue.shift());
 }
 
-function processNextBonus() {
-  if (state.bonusQueue.length === 0) {
-    state.processingBonus = false;
-    updateUI(); // refresh buttons after bonus chain completes (e.g. new extra_die just granted)
+function applyBonus(b){
+  addLog(`→ Bonus: ${b}`);
+  if (b==='reroll'){S.rerollCircled++;addLog('  Reroll unlocked');updateActionsUI();processNext();return;}
+  if (b==='extra_die'){S.extraCircled++;addLog('  Extra Die unlocked');updateActionsUI();processNext();return;}
+  if (b==='fox'){S.foxCount++;addLog('  Fox!');updateScores();processNext();return;}
+  // Placement bonus — check validity
+  if (!bonusHasField(b)){
+    showOhMy('Bonus Not Valid',`Bonus: ${BONUS_DESC[b]?.title||b}\nNo valid field available.`,()=>{processNext();updateUI();});
     return;
   }
-  state.processingBonus = true;
-  const bonus = state.bonusQueue.shift();
-  applyBonus(bonus, 'Bonus chain');
-}
-
-function applyBonus(bonus, source) {
-  addLog(`→ Apply bonus: ${bonus} (${source})`);
-  switch(bonus) {
-    case 'reroll':
-      state.rerollCircled++;
-      addLog('  Reroll action unlocked');
-      updateActionsUI();
-      processNextBonus();
-      break;
-    case 'extra_die':
-      state.extraDieCircled++;
-      addLog('  Extra Die action unlocked');
-      updateActionsUI();
-      processNextBonus();
-      break;
-    case 'fox':
-      state.foxCount++;
-      addLog('  Fox earned!');
-      updateScores();
-      processNextBonus();
-      break;
-    case 'blue_X': {
-      // Mark any one blue cell
-      const opts = getAvailableBlue();
-      if (opts.length === 0) { addLog('  No blue cells available'); processNextBonus(); break; }
-      // Auto-pick first available? No - show UI for player to choose
-      showBonusPick('blue_X', 'Mark any BLUE cell (bonus)', opts, (r,c) => {
-        state.blue.crossed[r][c] = true;
-        checkBlueBonuses(r,c);
-        updateScores(); updateUI();
-        processNextBonus();
-      });
-      break;
-    }
-    case 'yellow_X': {
-      const opts = getAvailableYellow();
-      if (opts.length === 0) { addLog('  No yellow cells available'); processNextBonus(); break; }
-      showBonusPick('yellow_X', 'Mark any YELLOW cell (bonus)', opts, (r,c) => {
-        state.yellow.crossed[r][c] = true;
-        checkYellowBonuses(r,c);
-        updateScores(); updateUI();
-        processNextBonus();
-      });
-      break;
-    }
-    case 'green_X': {
-      // Mark next green cell (any value acceptable for bonus)
-      const idx = state.green.next;
-      if (idx < GREEN_FIELDS.length) {
-        state.green.filled[idx] = 0; // marked as 'X' bonus
-        state.green.next++;
-        addLog(`  Green[${idx}] marked via bonus`);
-        if (GREEN_FIELDS[idx].bonus) queueBonus(GREEN_FIELDS[idx].bonus);
-        updateScores(); updateUI();
-      }
-      processNextBonus();
-      break;
-    }
-    case 'orange_4': {
-      const idx = state.orange.next;
-      if (idx < ORANGE_FIELDS.length) {
-        const mult = ORANGE_FIELDS[idx].mult || 1;
-        state.orange.filled[idx] = 4 * mult;
-        state.orange.next++;
-        addLog(`  Orange[${idx}] = 4×${mult} = ${4*mult} (bonus)`);
-        if (ORANGE_FIELDS[idx].bonus) queueBonus(ORANGE_FIELDS[idx].bonus);
-        updateScores(); updateUI();
-      }
-      processNextBonus();
-      break;
-    }
-    case 'orange_5': {
-      const idx = state.orange.next;
-      if (idx < ORANGE_FIELDS.length) {
-        const mult = ORANGE_FIELDS[idx].mult || 1;
-        state.orange.filled[idx] = 5 * mult;
-        state.orange.next++;
-        addLog(`  Orange[${idx}] = 5×${mult} = ${5*mult} (bonus)`);
-        if (ORANGE_FIELDS[idx].bonus) queueBonus(ORANGE_FIELDS[idx].bonus);
-        updateScores(); updateUI();
-      }
-      processNextBonus();
-      break;
-    }
-    case 'purple_6': {
-      const idx = state.purple.next;
-      if (idx < PURPLE_FIELDS.length) {
-        // 6 can always be placed
-        state.purple.filled[idx] = 6;
-        state.purple.next++;
-        addLog(`  Purple[${idx}] = 6 (bonus)`);
-        if (PURPLE_FIELDS[idx].bonus) queueBonus(PURPLE_FIELDS[idx].bonus);
-        updateScores(); updateUI();
-      }
-      processNextBonus();
-      break;
-    }
-    case 'black_any': {
-      showBonusPick('black_any', 'Mark any free field in any area', null, (area, ...coords) => {
-        applyBlackAny(area, ...coords);
-        updateScores(); updateUI();
-        processNextBonus();
-      });
-      break;
-    }
-    default:
-      addLog(`  Unknown bonus: ${bonus}`);
-      processNextBonus();
-  }
-}
-
-// Apply the round-4 "black any" bonus choice
-function applyBlackAny(area, ...coords) {
-  if (area === 'yellow') {
-    const [r, c] = coords;
-    state.yellow.crossed[r][c] = true;
-    addLog(`  Black bonus → Yellow [${r},${c}] ✕`);
-    checkYellowBonuses(r, c);
-  } else if (area === 'blue') {
-    const [r, c] = coords;
-    state.blue.crossed[r][c] = true;
-    addLog(`  Black bonus → Blue [${r},${c}] ✕`);
-    checkBlueBonuses(r, c);
-  } else if (area === 'green') {
-    const idx = state.green.next;
-    if (idx < GREEN_FIELDS.length) {
-      state.green.filled[idx] = 0;
-      state.green.next++;
-      addLog(`  Black bonus → Green [${idx}] ✕`);
-      if (GREEN_FIELDS[idx].bonus) queueBonus(GREEN_FIELDS[idx].bonus);
-    }
-  } else if (area === 'orange') {
-    const idx = state.orange.next;
-    if (idx < ORANGE_FIELDS.length) {
-      const mult = ORANGE_FIELDS[idx].mult || 1;
-      state.orange.filled[idx] = 6 * mult;
-      state.orange.next++;
-      addLog(`  Black bonus → Orange [${idx}] = 6×${mult} = ${6*mult}`);
-      if (ORANGE_FIELDS[idx].bonus) queueBonus(ORANGE_FIELDS[idx].bonus);
-    }
-  } else if (area === 'purple') {
-    const idx = state.purple.next;
-    if (idx < PURPLE_FIELDS.length) {
-      state.purple.filled[idx] = 6;
-      state.purple.next++;
-      addLog(`  Black bonus → Purple [${idx}] = 6`);
-      if (PURPLE_FIELDS[idx].bonus) queueBonus(PURPLE_FIELDS[idx].bonus);
-    }
-  }
-}
-
-function getAvailableBlue() {
-  const opts = [];
-  for (let r = 0; r < 3; r++)
-    for (let c = 0; c < 4; c++)
-      if (BLUE_LAYOUT[r][c] !== null && !state.blue.crossed[r][c])
-        opts.push([r,c]);
-  return opts;
-}
-
-function getAvailableYellow() {
-  const opts = [];
-  for (let r = 0; r < 4; r++)
-    for (let c = 0; c < 4; c++)
-      if (YELLOW_LAYOUT[r][c] !== 'X' && !state.yellow.crossed[r][c])
-        opts.push([r,c]);
-  return opts;
-}
-
-let _bonusCallback = null;
-
-function showBonusPick(type, desc, opts, callback) {
-  _bonusCallback = callback;
-  const titles = {
-    blue_X: '🔵 BLUE BONUS',
-    yellow_X: '🟡 YELLOW BONUS',
-    black_any: '⬛ ROUND 4 BONUS',
-  };
-  document.getElementById('bonus-title').textContent = titles[type] || '🎁 BONUS';
-  const descs = {
-    blue_X:    'Click any highlighted BLUE cell to mark it — or Skip.',
-    yellow_X:  'Click any highlighted YELLOW cell to mark it — or Skip.',
-    black_any: 'Click any free cell in any area. Yellow/Blue → ✕, Green/Orange/Purple → 6.',
-  };
-  document.getElementById('bonus-desc').textContent = descs[type] || 'Click a highlighted cell or Skip.';
-  const overlay = document.getElementById('bonus-overlay');
-  overlay.classList.remove('hidden');
-  const box = document.getElementById('bonus-box');
-  box.classList.remove('bonus-pop');
-  void box.offsetWidth;
-  box.classList.add('bonus-pop');
-  state._bonusMode = type;
-  state._bonusOpts = opts; // null for black_any (all free cells valid)
+  S.bonusMode=b;
+  const bd=BONUS_DESC[b]||{title:'🎁 BONUS',desc:'Click a highlighted field.'};
+  document.getElementById('bonus-title').textContent=bd.title;
+  document.getElementById('bonus-desc').textContent=bd.desc;
+  const ov=document.getElementById('bonus-overlay');
+  ov.classList.remove('hidden');
+  const bx=document.getElementById('bonus-box');
+  bx.classList.remove('bonus-pop');void bx.offsetWidth;bx.classList.add('bonus-pop');
   updateUI();
 }
 
-function cancelBonus() {
-  document.getElementById('bonus-overlay').classList.add('hidden');
-  state._bonusMode = null;
-  state._bonusOpts = null;
-  _bonusCallback = null;
-  processNextBonus();
+function endBonus(){document.getElementById('bonus-overlay').classList.add('hidden');S.bonusMode=null;}
+
+// Bonus placement handlers
+function bonusPlaceY(r,c){
+  if (S.yellow.crossed[r][c]||YELLOW_LAYOUT[r][c]==='X') return;
+  S.yellow.crossed[r][c]=true; addLog(`Bonus→Yellow[${r},${c}]✕`);
+  checkYBonuses(r,c); endBonus(); updateScores(); updateUI(); processNext();
+}
+function bonusPlaceB(r,c){
+  if (BLUE_LAYOUT[r][c]===null||S.blue.crossed[r][c]) return;
+  S.blue.crossed[r][c]=true; addLog(`Bonus→Blue[${r},${c}]✕`);
+  checkBBonuses(r,c); endBonus(); updateScores(); updateUI(); processNext();
+}
+function bonusPlaceG(){
+  const n=S.green.next; if(n>=GREEN_FIELDS.length)return;
+  S.green.filled[n]=0; S.green.next++;
+  addLog(`Bonus→Green[${n}]✕`);
+  if(GREEN_FIELDS[n].bonus)queueBonus(GREEN_FIELDS[n].bonus);
+  endBonus(); updateScores(); updateUI(); processNext();
+}
+function bonusPlaceO(){
+  const n=S.orange.next; if(n>=ORANGE_FIELDS.length)return;
+  const val=S.bonusMode==='orange_4'?4:S.bonusMode==='orange_5'?5:6;
+  const m=ORANGE_FIELDS[n].m||1;
+  S.orange.filled[n]=val*m; S.orange.next++;
+  addLog(`Bonus→Orange[${n}]=${val}×${m}=${val*m}`);
+  if(ORANGE_FIELDS[n].bonus)queueBonus(ORANGE_FIELDS[n].bonus);
+  endBonus(); updateScores(); updateUI(); processNext();
+}
+function bonusPlaceP(){
+  const n=S.purple.next; if(n>=PURPLE_FIELDS.length)return;
+  S.purple.filled[n]=6; S.purple.next++;
+  addLog(`Bonus→Purple[${n}]=6`);
+  if(PURPLE_FIELDS[n].bonus)queueBonus(PURPLE_FIELDS[n].bonus);
+  endBonus(); updateScores(); updateUI(); processNext();
 }
 
-function triggerBonusCell(r, c) {
-  if (!state._bonusMode) return;
-  document.getElementById('bonus-overlay').classList.add('hidden');
-  state._bonusMode = null;
-  state._bonusOpts = null;
-  const cb = _bonusCallback;
-  _bonusCallback = null;
-  cb(r, c);
+// black_any routes to correct area
+function bonusBlackAny(area,r,c){
+  if(area==='yellow') bonusPlaceY(r,c);
+  else if(area==='blue') bonusPlaceB(r,c);
+  else if(area==='green') bonusPlaceG();
+  else if(area==='orange') bonusPlaceO();
+  else if(area==='purple') bonusPlaceP();
 }
 
-// Used by black_any: passes area name + optional coords to callback
-function triggerBonusAreaCell(area, ...coords) {
-  if (!state._bonusMode) return;
-  document.getElementById('bonus-overlay').classList.add('hidden');
-  state._bonusMode = null;
-  state._bonusOpts = null;
-  const cb = _bonusCallback;
-  _bonusCallback = null;
-  cb(area, ...coords);
-}
-
-// ═══════════════════════════════════════════════
-// EXTRA DIE & REROLL ACTIONS
-// ═══════════════════════════════════════════════
-function useReroll() {
-  if (state.rerollCircled - state.rerollUsed <= 0) return;
-  if (!state.isActive) { addLog('Reroll only available to active player'); return; }
-  // Reroll all non-tray, non-sheet dice
-  const available = state.dice.filter(d => !d.onTray && !d.onSheet);
-  if (available.length === 0) { addLog('No dice to reroll'); return; }
-  available.forEach(d => d.value = rollSingle());
-  state.rerollUsed++;
-  addLog('Used Reroll action');
-  animateDice();
-  updateActionsUI();
-  updateUI();
-}
-
-function useExtraDie() {
-  const avail = state.extraDieCircled - state.extraDieUsed;
-  if (avail <= 0) { addLog('No Extra Die actions available'); return; }
-  if (!state.turnOver) { addLog('Extra Die is only available after placing your dice for this turn'); return; }
-  if (state.awaitingPlacement) { addLog('Finish placing the current die first'); return; }
-  if (state.awaitingExtraDie) {
-    // Cancel extra die mode
-    state.awaitingExtraDie = false;
-    addLog('Extra Die cancelled');
-    updateUI();
-    return;
+// ═══════════════════════════════════════
+// BOARD BONUS CHECKS
+// ═══════════════════════════════════════
+function checkYBonuses(r,c){
+  if(!S.yellow.rowEarned[r]&&S.yellow.crossed[r].every(v=>v)){
+    S.yellow.rowEarned[r]=true; addLog(`Yellow row${r}→${YELLOW_ROW_BONUSES[r]}`); queueBonus(YELLOW_ROW_BONUSES[r]);
   }
-  state.awaitingExtraDie = true;
-  addLog(`Extra Die: click any die not yet used as extra this turn (${avail} action(s) left)`);
-  updateUI();
-}
-
-function executeExtraDie(idx) {
-  const d = state.dice[idx];
-  if (state.extraDieUsedThisTurn.has(idx)) {
-    addLog(`${d.color.toUpperCase()} die already used as Extra Die this turn — pick a different one`);
-    return;
+  if(!S.yellow.colEarned[c]&&[0,1,2,3].every(row=>S.yellow.crossed[row][c])){
+    S.yellow.colEarned[c]=true; addLog(`Yellow col${c}→+${YELLOW_COL_PTS[c]}pts`);
   }
-  state.awaitingExtraDie = false;
-  state.extraDieUsed++;
-  state.extraDieUsedThisTurn.add(idx);
-  // Temporarily un-tray / un-sheet so it can be placed
-  // We keep its value but let the player place it like a normal die
-  state.selectedDieIdx = idx;
-  state.awaitingPlacement = true;
-  addLog(`Extra Die: selected ${d.color.toUpperCase()} (${d.value}) — place it on the board`);
-  updateActionsUI();
-  updateUI();
+  if(!S.yellow.diagEarned&&[0,1,2,3].every(i=>S.yellow.crossed[i][i])){
+    S.yellow.diagEarned=true; addLog('Yellow diag→extra_die'); queueBonus('extra_die');
+  }
+}
+function checkBBonuses(r,c){
+  const rLen=BLUE_LAYOUT[r].filter(v=>v!==null).length;
+  const rCrossed=BLUE_LAYOUT[r].filter((v,ci)=>v!==null&&S.blue.crossed[r][ci]).length;
+  if(!S.blue.rowEarned[r]&&rCrossed>=rLen){
+    S.blue.rowEarned[r]=true; addLog(`Blue row${r}→${BLUE_ROW_BONUSES[r]}`); queueBonus(BLUE_ROW_BONUSES[r]);
+  }
+  if(!S.blue.colEarned[c]&&[0,1,2].every(row=>BLUE_LAYOUT[row][c]===null||S.blue.crossed[row][c])){
+    S.blue.colEarned[c]=true; addLog(`Blue col${c}→${BLUE_COL_BONUSES[c]}`); queueBonus(BLUE_COL_BONUSES[c]);
+  }
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // SCORING
-// ═══════════════════════════════════════════════
-function calcYellowScore() {
-  let pts = 0;
-  for (let c = 0; c < 4; c++) {
-    if (state.yellow.colEarned[c]) pts += YELLOW_COL_POINTS[c];
-  }
-  return pts;
+// ═══════════════════════════════════════
+function calcY(){return [0,1,2,3].filter(c=>S.yellow.colEarned[c]).reduce((s,c)=>s+YELLOW_COL_PTS[c],0);}
+function calcB(){
+  let n=0;
+  for(let r=0;r<3;r++)for(let c=0;c<4;c++)if(BLUE_LAYOUT[r][c]!==null&&S.blue.crossed[r][c])n++;
+  return n===0?0:BLUE_MILESTONES[Math.min(n,BLUE_MILESTONES.length)-1];
 }
-function calcBlueScore() {
-  let count = 0;
-  for (let r = 0; r < 3; r++)
-    for (let c = 0; c < 4; c++)
-      if (BLUE_LAYOUT[r][c] !== null && state.blue.crossed[r][c]) count++;
-  if (count === 0) return 0;
-  // count=1 → BLUE_MILESTONES[0]=1, count=2 → [1]=2, …, count=11 → [10]=56
-  return BLUE_MILESTONES[Math.min(count, BLUE_MILESTONES.length) - 1];
-}
-function calcGreenScore() {
-  const idx = Math.max(0, state.green.next - 1);
-  return state.green.next > 0 ? GREEN_FIELDS[idx].pts : 0;
-}
-function calcOrangeScore() {
-  return state.orange.filled.reduce((s,v) => s + (v || 0), 0);
-}
-function calcPurpleScore() {
-  return state.purple.filled.reduce((s,v) => s + (v || 0), 0);
-}
-function calcFoxScore() {
-  const scores = [calcYellowScore(), calcBlueScore(), calcGreenScore(), calcOrangeScore(), calcPurpleScore()];
-  const min = Math.min(...scores);
-  return state.foxCount * min;
+function calcG(){return S.green.next>0?GREEN_FIELDS[S.green.next-1].pts:0;}
+function calcO(){return S.orange.filled.reduce((s,v)=>s+(v||0),0);}
+function calcP(){return S.purple.filled.reduce((s,v)=>s+(v||0),0);}
+function calcF(){return S.foxCount*Math.min(calcY(),calcB(),calcG(),calcO(),calcP());}
+
+function updateScores(){
+  const y=calcY(),b=calcB(),g=calcG(),o=calcO(),p=calcP(),f=calcF();
+  document.getElementById('sc-yellow').textContent=y;
+  document.getElementById('sc-blue').textContent=b;
+  document.getElementById('sc-green').textContent=g;
+  document.getElementById('sc-orange').textContent=o;
+  document.getElementById('sc-purple').textContent=p;
+  document.getElementById('sc-foxes').textContent=`${f} (${S.foxCount}🦊)`;
+  document.getElementById('sc-total').textContent=y+b+g+o+p+f;
+  document.getElementById('yellow-score').textContent=y+' pts';
+  document.getElementById('blue-score').textContent=b+' pts';
+  document.getElementById('green-score').textContent=g+' pts';
+  document.getElementById('orange-score').textContent=o+' pts';
+  document.getElementById('purple-score').textContent=p+' pts';
 }
 
-function updateScores() {
-  const y = calcYellowScore(), b = calcBlueScore(), g = calcGreenScore(),
-        o = calcOrangeScore(), p = calcPurpleScore(), f = calcFoxScore();
-  const total = y+b+g+o+p+f;
-  document.getElementById('sc-yellow').textContent = y;
-  document.getElementById('sc-blue').textContent = b;
-  document.getElementById('sc-green').textContent = g;
-  document.getElementById('sc-orange').textContent = o;
-  document.getElementById('sc-purple').textContent = p;
-  document.getElementById('sc-foxes').textContent = f + ` (${state.foxCount}🦊)`;
-  document.getElementById('sc-total').textContent = total;
-  document.getElementById('yellow-score').textContent = y + ' pts';
-  document.getElementById('blue-score').textContent = b + ' pts';
-  document.getElementById('green-score').textContent = g + ' pts';
-  document.getElementById('orange-score').textContent = o + ' pts';
-  document.getElementById('purple-score').textContent = p + ' pts';
-}
-
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // GAME END
-// ═══════════════════════════════════════════════
-function endGame() {
-  state.gameOver = true;
-  const y = calcYellowScore(), b = calcBlueScore(), g = calcGreenScore(),
-        o = calcOrangeScore(), p = calcPurpleScore(), f = calcFoxScore();
-  const total = y+b+g+o+p+f;
-  const ratings = [
-    [280,'⭐⭐⭐⭐⭐ You\'re so clever!'],
-    [260,'⭐⭐⭐⭐ Are you Einstein?'],
-    [240,'⭐⭐⭐ What a genius!'],
-    [220,'⭐⭐½ Impressive!'],
-    [200,'⭐⭐ Hat\'s off to you!'],
-    [180,'⭐½ Great result!'],
-    [160,'⭐ Pretty good!'],
-    [140,'½ Not bad…'],
-    [0,  '0 Try harder!']
-  ];
-  const rating = ratings.find(([t]) => total >= t)[1];
-  document.getElementById('end-scores').innerHTML = `
-    <div class="modal-score-row"><span>🟡 Yellow</span><span>${y}</span></div>
-    <div class="modal-score-row"><span>🔵 Blue</span><span>${b}</span></div>
-    <div class="modal-score-row"><span>🟢 Green</span><span>${g}</span></div>
-    <div class="modal-score-row"><span>🟠 Orange</span><span>${o}</span></div>
-    <div class="modal-score-row"><span>🟣 Purple</span><span>${p}</span></div>
-    <div class="modal-score-row"><span>🦊 Foxes ×${state.foxCount}</span><span>${f}</span></div>
-  `;
-  document.getElementById('end-total').textContent = `TOTAL: ${total}`;
-  document.getElementById('end-rating').textContent = rating;
+// ═══════════════════════════════════════
+function endGame(){
+  S.gameOver=true;
+  const y=calcY(),b=calcB(),g=calcG(),o=calcO(),p=calcP(),f=calcF(),tot=y+b+g+o+p+f;
+  const ratings=[[280,"⭐⭐⭐⭐⭐ You're so clever!"],[260,"⭐⭐⭐⭐ Are you Einstein?"],
+    [240,"⭐⭐⭐ What a genius!"],[220,"⭐⭐½ Impressive!"],[200,"⭐⭐ Hat's off!"],
+    [180,"⭐½ Great result!"],[160,"⭐ Pretty good!"],[140,"½ Not bad…"],[0,"0 Try harder!"]];
+  document.getElementById('end-scores').innerHTML=
+    ['🟡 Yellow','🔵 Blue','🟢 Green','🟠 Orange','🟣 Purple'].map((n,i)=>`<div class="modal-score-row"><span>${n}</span><span>${[y,b,g,o,p][i]}</span></div>`).join('')+
+    `<div class="modal-score-row"><span>🦊 Foxes ×${S.foxCount}</span><span>${f}</span></div>`;
+  document.getElementById('end-total').textContent=`TOTAL: ${tot}`;
+  document.getElementById('end-rating').textContent=ratings.find(([t])=>tot>=t)[1];
   document.getElementById('end-modal').classList.remove('hidden');
 }
 
-function resetGame() {
-  document.getElementById('end-modal').classList.add('hidden');
-  document.getElementById('bonus-overlay').classList.add('hidden');
-  initState();
-  buildBoard();
-  updateUI();
-  updateScores();
-  addLog('=== New Game ===');
+function resetGame(){
+  ['end-modal','ohmy-overlay','bonus-overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  initState(); buildBoard(); updateUI(); updateScores(); addLog('=== New Game ===');
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // BUILD BOARD
-// ═══════════════════════════════════════════════
-function buildBoard() {
-  buildYellow();
-  buildBlue();
-  buildGreen();
-  buildOrange();
-  buildPurple();
+// ═══════════════════════════════════════
+function bLabel(b){
+  return {blue_X:'🔵✕',yellow_X:'🟡✕',green_X:'🟢✕',orange_4:'🟠4',orange_5:'🟠5',
+          purple_6:'🟣6',fox:'🦊',reroll:'🔄',extra_die:'➕'}[b]||b;
 }
 
-function buildYellow() {
-  const grid = document.getElementById('yellow-grid');
-  grid.innerHTML = '';
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'grid-cell yellow-cell';
-      cell.id = `y-${r}-${c}`;
-      const val = YELLOW_LAYOUT[r][c];
-      cell.textContent = val;
-      cell.onclick = () => {
-        if (state._bonusMode === 'yellow_X') {
-          const isOpt = state._bonusOpts.some(([or,oc]) => or===r&&oc===c);
-          if (isOpt) triggerBonusCell(r,c);
-          return;
-        }
-        if (state.awaitingPlacement) placeOnYellow(r, c);
-      };
-      grid.appendChild(cell);
-    }
+function buildBoard(){
+  // Yellow
+  const yg=document.getElementById('yellow-grid');yg.innerHTML='';
+  for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+    const el=document.createElement('div');el.className='grid-cell yellow-cell';el.id=`y-${r}-${c}`;
+    el.textContent=YELLOW_LAYOUT[r][c];
+    el.onclick=()=>{
+      if(S.bonusMode==='yellow_X'){bonusPlaceY(r,c);return;}
+      if(S.bonusMode==='black_any'){bonusBlackAny('yellow',r,c);return;}
+      if(S.awaitingPlacement)placeY(r,c);
+    };
+    yg.appendChild(el);
   }
-  // Col scores
-  const colScores = document.getElementById('yellow-col-scores');
-  colScores.innerHTML = '';
-  YELLOW_COL_POINTS.forEach((pts, c) => {
-    const b = document.createElement('div');
-    b.className = 'col-score-badge';
-    b.id = `ycs-${c}`;
-    b.textContent = pts;
-    colScores.appendChild(b);
-  });
-  // Row bonuses
-  const rowBonuses = document.getElementById('yellow-row-bonuses');
-  rowBonuses.innerHTML = '';
-  YELLOW_ROW_BONUSES.forEach((bonus, r) => {
-    const b = document.createElement('div');
-    b.className = 'row-bonus-badge';
-    b.id = `yrb-${r}`;
-    b.textContent = bonusLabel(bonus);
-    rowBonuses.appendChild(b);
-  });
-  // Diag
-  const diag = document.getElementById('yellow-diag-bonus');
-  diag.innerHTML = `<span>↘ Diagonal:</span><span id="y-diag-badge" style="font-size:0.8rem;color:var(--yellow)">+1 Die</span>`;
-}
+  const ycs=document.getElementById('yellow-col-scores');ycs.innerHTML='';
+  YELLOW_COL_PTS.forEach((pts,c)=>{const b=document.createElement('div');b.className='col-score-badge';b.id=`ycs-${c}`;b.textContent=pts;ycs.appendChild(b);});
+  const yrb=document.getElementById('yellow-row-bonuses');yrb.innerHTML='';
+  YELLOW_ROW_BONUSES.forEach((bonus,r)=>{const b=document.createElement('div');b.className='row-bonus-badge';b.id=`yrb-${r}`;b.textContent=bLabel(bonus);yrb.appendChild(b);});
+  document.getElementById('yellow-diag-bonus').innerHTML='<span>↘ Diagonal: <span id="y-diag-badge" style="color:var(--yellow)">➕</span></span>';
 
-function buildBlue() {
-  // Milestones
-  const ms = document.getElementById('blue-milestones');
-  ms.innerHTML = '';
-  BLUE_MILESTONES.forEach((pts, i) => {
-    const pip = document.createElement('div');
-    pip.className = 'milestone-pip';
-    pip.id = `bms-${i}`;
-    pip.textContent = pts;
-    ms.appendChild(pip);
-  });
-
-  // Build grid + row-bonuses together in a CSS grid container
-  // so row-bonuses sit flush right of each row without being offset by the placeholder
-  const gc = document.getElementById('blue-grid-container');
-  gc.innerHTML = '';
-
-  // Outer wrapper: grid with [grid-cols] [bonus-col]
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'display:inline-grid;grid-template-columns:1fr auto;gap:4px;align-items:start;';
-
-  const gridCol = document.createElement('div');
-  gridCol.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
-
-  const bonusCol = document.createElement('div');
-  bonusCol.id = 'blue-row-bonuses-inner';
-  bonusCol.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
-
-  for (let r = 0; r < 3; r++) {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:4px;';
-
-    // Row 0: prepend placeholder so 2,3,4 sit in positions 1-3
-    if (r === 0) {
-      const placeholder = document.createElement('div');
-      placeholder.style.cssText = 'width:44px;height:44px;border-radius:6px;background:rgba(58,134,255,0.04);border:2px dashed rgba(58,134,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-      const inner = document.createElement('span');
-      inner.style.cssText = 'font-size:0.6rem;color:rgba(58,134,255,0.3);';
-      inner.textContent = '＋';
-      placeholder.appendChild(inner);
-      row.appendChild(placeholder);
-    }
-
-    for (let c = 0; c < 4; c++) {
-      if (BLUE_LAYOUT[r][c] === null) continue;
-      const cell = document.createElement('div');
-      cell.className = 'grid-cell blue-cell';
-      cell.id = `b-${r}-${c}`;
-      cell.textContent = BLUE_LAYOUT[r][c];
-      cell.onclick = () => {
-        if (state._bonusMode === 'blue_X') {
-          const isOpt = state._bonusOpts.some(([or,oc]) => or===r&&oc===c);
-          if (isOpt) triggerBonusCell(r,c);
-          return;
-        }
-        if (state.awaitingPlacement) placeOnBlue(r, c);
+  // Blue
+  const bms=document.getElementById('blue-milestones');bms.innerHTML='';
+  BLUE_MILESTONES.forEach((pts,i)=>{const p=document.createElement('div');p.className='milestone-pip';p.id=`bms-${i}`;p.textContent=pts;bms.appendChild(p);});
+  const gc=document.getElementById('blue-grid-container');gc.innerHTML='';
+  const wrap=document.createElement('div');wrap.style.cssText='display:inline-grid;grid-template-columns:1fr auto;gap:4px;align-items:start;';
+  const gCol=document.createElement('div');gCol.style.cssText='display:flex;flex-direction:column;gap:4px;';
+  const bCol=document.createElement('div');bCol.style.cssText='display:flex;flex-direction:column;gap:4px;';
+  for(let r=0;r<3;r++){
+    const row=document.createElement('div');row.style.cssText='display:flex;gap:4px;';
+    if(r===0){const ph=document.createElement('div');ph.style.cssText='width:44px;height:44px;border-radius:6px;background:rgba(58,134,255,0.04);border:2px dashed rgba(58,134,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;';ph.innerHTML='<span style="font-size:0.6rem;color:rgba(58,134,255,0.3)">＋</span>';row.appendChild(ph);}
+    for(let c=0;c<4;c++){
+      if(BLUE_LAYOUT[r][c]===null)continue;
+      const el=document.createElement('div');el.className='grid-cell blue-cell';el.id=`b-${r}-${c}`;el.textContent=BLUE_LAYOUT[r][c];
+      el.onclick=()=>{
+        if(S.bonusMode==='blue_X'){bonusPlaceB(r,c);return;}
+        if(S.bonusMode==='black_any'){bonusBlackAny('blue',r,c);return;}
+        if(S.awaitingPlacement)placeB(r,c);
       };
-      row.appendChild(cell);
+      row.appendChild(el);
     }
-    gridCol.appendChild(row);
-
-    // Row bonus for this row, placed in bonus column — same height as the row
-    const rb = document.createElement('div');
-    rb.className = 'row-bonus-badge';
-    rb.id = `brb-${r}`;
-    rb.textContent = bonusLabel(BLUE_ROW_BONUSES[r]);
-    bonusCol.appendChild(rb);
+    gCol.appendChild(row);
+    const rb=document.createElement('div');rb.className='row-bonus-badge';rb.id=`brb-${r}`;rb.textContent=bLabel(BLUE_ROW_BONUSES[r]);bCol.appendChild(rb);
   }
+  const cbRow=document.createElement('div');cbRow.className='blue-col-bonuses';
+  BLUE_COL_BONUSES.forEach((bonus,c)=>{const b=document.createElement('div');b.className='row-bonus-badge';b.id=`bcb-${c}`;b.textContent=bLabel(bonus);b.style.cssText='width:44px;height:26px;';cbRow.appendChild(b);});
+  gCol.appendChild(cbRow);
+  wrap.appendChild(gCol);wrap.appendChild(bCol);gc.appendChild(wrap);
 
-  wrapper.appendChild(gridCol);
-  wrapper.appendChild(bonusCol);
-
-  // Col bonuses — placed directly inside gridCol so they left-align with col-0 of rows 1+2
-  const cb = document.createElement('div');
-  cb.id = 'blue-col-bonuses';
-  cb.className = 'blue-col-bonuses';
-  BLUE_COL_BONUSES.forEach((bonus, c) => {
-    const b = document.createElement('div');
-    b.className = 'row-bonus-badge';
-    b.id = `bcb-${c}`;
-    b.textContent = bonusLabel(bonus);
-    b.style.width = '44px'; b.style.height = '26px';
-    cb.appendChild(b);
-  });
-  gridCol.appendChild(cb);
-
-  gc.appendChild(wrapper);
-
-  // Clear the static col-bonuses placeholder in HTML (we built it dynamically above)
-  const cbStatic = document.getElementById('blue-col-bonuses');
-  // Already replaced by dynamic build above — nothing to clear
-  // Clear the old separate row-bonuses container (now handled inline above)
-  const rb = document.getElementById('blue-row-bonuses');
-  if (rb) rb.innerHTML = '';
-}
-
-function buildGreen() {
-  // Points milestone row above the cells (like blue)
-  const ptsRow = document.getElementById('green-pts-row');
-  ptsRow.innerHTML = '';
-  GREEN_FIELDS.forEach((f, i) => {
-    const pip = document.createElement('div');
-    pip.className = 'green-pts-pip';
-    pip.id = `gpts-${i}`;
-    pip.textContent = f.pts;
-    ptsRow.appendChild(pip);
+  // Green
+  const gpr=document.getElementById('green-pts-row');gpr.innerHTML='';
+  GREEN_FIELDS.forEach((_,i)=>{const p=document.createElement('div');p.className='green-pts-pip';p.id=`gpts-${i}`;p.textContent=GREEN_FIELDS[i].pts;gpr.appendChild(p);});
+  const gs=document.getElementById('green-strip');gs.innerHTML='';
+  GREEN_FIELDS.forEach((f,i)=>{
+    const el=document.createElement('div');el.className='row-cell green-cell';el.id=`g-${i}`;
+    const cs=document.createElement('span');cs.style.cssText='font-size:0.75rem;font-weight:800;';cs.textContent='≥'+f.cond;el.appendChild(cs);
+    if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);el.appendChild(bs);}
+    el.onclick=()=>{
+      if(S.bonusMode==='green_X'||S.bonusMode==='black_any'){bonusPlaceG();return;}
+      if(S.awaitingPlacement&&S.green.next===i)placeG();
+    };
+    gs.appendChild(el);
   });
 
-  // Strip cells: show condition (≥N) centred, bonus badge at bottom-right
-  const strip = document.getElementById('green-strip');
-  strip.innerHTML = '';
-  GREEN_FIELDS.forEach((f, i) => {
-    const cell = document.createElement('div');
-    cell.className = 'row-cell green-cell';
-    cell.id = `g-${i}`;
+  // Orange
+  const os=document.getElementById('orange-strip');os.innerHTML='';
+  ORANGE_FIELDS.forEach((f,i)=>{
+    const el=document.createElement('div');el.className='row-cell orange-cell';el.id=`o-${i}`;
+    if(f.m>1){const ms=document.createElement('span');ms.className='cell-mult';ms.textContent='×'+f.m;el.appendChild(ms);}
+    if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);el.appendChild(bs);}
+    el.onclick=()=>{
+      if(['orange_4','orange_5','black_any'].includes(S.bonusMode)){bonusPlaceO();return;}
+      if(S.awaitingPlacement&&S.orange.next===i)placeO();
+    };
+    os.appendChild(el);
+  });
 
-    const condSpan = document.createElement('span');
-    condSpan.style.cssText = 'font-size:0.75rem;font-weight:800;';
-    condSpan.textContent = '≥' + f.cond;
-    cell.appendChild(condSpan);
-
-    if (f.bonus) {
-      const bs = document.createElement('span');
-      bs.className = 'cell-bonus';
-      bs.textContent = bonusLabel(f.bonus);
-      cell.appendChild(bs);
-    }
-    cell.onclick = () => { if (state.awaitingPlacement && state.green.next === i) placeOnGreen(); };
-    strip.appendChild(cell);
+  // Purple
+  const ps=document.getElementById('purple-strip');ps.innerHTML='';
+  PURPLE_FIELDS.forEach((f,i)=>{
+    const el=document.createElement('div');el.className='row-cell purple-cell';el.id=`p-${i}`;
+    if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);el.appendChild(bs);}
+    el.onclick=()=>{
+      if(['purple_6','black_any'].includes(S.bonusMode)){bonusPlaceP();return;}
+      if(S.awaitingPlacement&&S.purple.next===i)placeP();
+    };
+    ps.appendChild(el);
   });
 }
 
-function buildOrange() {
-  const strip = document.getElementById('orange-strip');
-  strip.innerHTML = '';
-  ORANGE_FIELDS.forEach((f, i) => {
-    const cell = document.createElement('div');
-    cell.className = 'row-cell orange-cell';
-    cell.id = `o-${i}`;
-    if (f.mult > 1) {
-      const ms = document.createElement('span');
-      ms.className = 'cell-mult';
-      ms.textContent = '×'+f.mult;
-      cell.appendChild(ms);
-    }
-    if (f.bonus) {
-      const bs = document.createElement('span');
-      bs.className = 'cell-bonus';
-      bs.textContent = bonusLabel(f.bonus);
-      cell.appendChild(bs);
-    }
-    cell.onclick = () => { if (state.awaitingPlacement && state.orange.next === i) placeOnOrange(); };
-    strip.appendChild(cell);
-  });
-}
-
-function buildPurple() {
-  const strip = document.getElementById('purple-strip');
-  strip.innerHTML = '';
-  PURPLE_FIELDS.forEach((f, i) => {
-    const cell = document.createElement('div');
-    cell.className = 'row-cell purple-cell';
-    cell.id = `p-${i}`;
-    if (f.bonus) {
-      const bs = document.createElement('span');
-      bs.className = 'cell-bonus';
-      bs.textContent = bonusLabel(f.bonus);
-      cell.appendChild(bs);
-    }
-    cell.onclick = () => { if (state.awaitingPlacement && state.purple.next === i) placeOnPurple(); };
-    strip.appendChild(cell);
-  });
-}
-
-function bonusLabel(bonus) {
-  const map = {
-    blue_X: '🔵✕', yellow_X: '🟡✕', green_X: '🟢✕',
-    orange_4: '🟠4', orange_5: '🟠5', purple_6: '🟣6',
-    fox: '🦊', reroll: '🔄', extra_die: '➕'
-  };
-  return map[bonus] || bonus;
-}
-
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // UI UPDATE
-// ═══════════════════════════════════════════════
-function updateUI() {
-  updateDiceUI();
-  updateBoardUI();
-  updatePhaseUI();
-  updateRoundUI();
-  updateActionsUI();
+// ═══════════════════════════════════════
+function updateUI(){updateDiceUI();updateBoardUI();updatePhaseUI();updateRoundUI();updateActionsUI();}
+
+function updateDiceUI(){
+  const area=document.getElementById('dice-area');area.innerHTML='';
+  const cands=getCandidates();
+  const blocking=S.bonusMode||S.processingBonus;
+
+  S.dice.forEach((d,i)=>{
+    const el=document.createElement('div');el.className=`die die-${d.color}`;el.textContent=d.value;el.style.position='relative';
+
+    if(blocking){
+      el.classList.add('dimmed');
+    } else if(d.selected){
+      el.classList.add('selected');el.onclick=()=>selectDie(i);
+    } else if(S.awaitingExtraDie){
+      if(d.extraUsed) el.classList.add('dimmed');
+      else if(dieIsPlaceable(i)){el.classList.add('selectable');el.onclick=()=>selectDie(i);}
+      else{el.classList.add('unplaceable');el.onclick=()=>selectDie(i);}
+    } else {
+      const isCandidate=cands.includes(i);
+      if(isCandidate&&(S.rollCount>0)&&!S.nextRollAllowed&&!S.placedThisRoll){
+        if(dieIsPlaceable(i)){el.classList.add('selectable');el.onclick=()=>selectDie(i);}
+        else{el.classList.add('unplaceable');el.onclick=()=>selectDie(i);}
+      } else {
+        el.classList.add('dimmed');
+      }
+    }
+
+    const lbl=document.createElement('span');lbl.className='die-label';
+    lbl.textContent=d.extraUsed?'extra✓':d.onTray?'tray':d.onSheet?'placed':'';
+    el.appendChild(lbl);area.appendChild(el);
+  });
+  document.getElementById('tray-count').textContent=S.dice.filter(d=>d.onTray).length;
 }
 
-function updateDiceUI() {
-  const area = document.getElementById('dice-area');
-  area.innerHTML = '';
-  state.dice.forEach((d, i) => {
-    const el = document.createElement('div');
-    el.className = `die die-${d.color}`;
-    el.textContent = d.value;
-    el.style.position = 'relative';
+function updateBoardUI(){
+  const bm=S.bonusMode, placing=S.awaitingPlacement, si=S.selIdx;
 
-    const alreadyExtraUsed = state.extraDieUsedThisTurn.has(i);
-
-    if (state.awaitingExtraDie) {
-      // Extra die mode: all dice selectable except ones already picked as extra this turn
-      if (alreadyExtraUsed) {
-        el.classList.add('on-tray'); // dim it
-      } else {
-        el.classList.add('selectable');
-        el.onclick = () => executeExtraDie(i);
-      }
-    } else {
-      // Normal mode
-      if (!state.isActive && state.rollCount > 0 && !state.turnOver) {
-        // PASSIVE phase: tray dice selectable (or deselectable if already selected); non-tray greyed
-        if (d.onTray || d.selected) {
-          el.classList.add(d.selected ? 'selected' : 'selectable');
-          el.onclick = () => selectDie(i);
-        } else {
-          el.classList.add('on-sheet'); // dim the high dice
-        }
-      } else {
-        // ACTIVE phase
-        if (state.mustRoll) {
-          // Must roll before selecting — dim all free dice
-          if (d.onTray) el.classList.add('on-tray');
-          else if (d.onSheet) el.classList.add('on-sheet');
-          else el.classList.add('on-tray'); // free dice dimmed too
-        } else if (d.selected) {
-          // Currently selected — always clickable to deselect
-          el.classList.add('selected');
-          el.onclick = () => selectDie(i);
-        } else if (d.onTray) {
-          el.classList.add('on-tray');
-        } else if (d.onSheet) {
-          el.classList.add('on-sheet');
-        } else if (state.rollCount > 0 && !state.turnOver) {
-          // Free die — selectable whether or not awaitingPlacement (allows switching selection)
-          el.classList.add('selectable');
-          el.onclick = () => selectDie(i);
-        }
-      }
-    }
-
-    const label = document.createElement('span');
-    label.className = 'die-label';
-    if (alreadyExtraUsed && !state.awaitingExtraDie) {
-      label.textContent = 'used✓';
-    } else {
-      label.textContent = d.onTray ? 'tray' : d.onSheet ? 'placed' : '';
-    }
-    el.appendChild(label);
-
-    area.appendChild(el);
-  });
-  document.getElementById('tray-count').textContent = state.dice.filter(d => d.onTray).length;
-}
-
-function updateBoardUI() {
-  // Yellow grid
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const cell = document.getElementById(`y-${r}-${c}`);
-      if (!cell) continue;
-      cell.classList.remove('crossed', 'selectable', 'disabled', 'preprinted-x');
-      const isPreX = YELLOW_LAYOUT[r][c] === 'X';
-      if (isPreX) {
-        // Pre-printed X: always shown as filled, distinct style
-        cell.classList.add('preprinted-x');
-        cell.textContent = '✕';
-      } else if (state.yellow.crossed[r][c]) {
-        cell.classList.add('crossed');
-        cell.textContent = '';
-      } else {
-        cell.textContent = YELLOW_LAYOUT[r][c];
-        const isBonusOpt = (state._bonusMode === 'yellow_X' && state._bonusOpts?.some(([or,oc]) => or===r&&oc===c))
-          || state._bonusMode === 'black_any';
-        if (isBonusOpt) {
-          cell.classList.add('selectable');
-          cell.onclick = () => {
-            if (state._bonusMode === 'yellow_X') { triggerBonusCell(r, c); }
-            else if (state._bonusMode === 'black_any') { triggerBonusAreaCell('yellow', r, c); }
-            else if (state.awaitingPlacement) placeOnYellow(r, c);
-          };
-        } else if (state.awaitingPlacement && canPlaceYellow(r,c)) {
-          cell.classList.add('selectable');
-        }
-      }
-    }
+  // Yellow
+  for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+    const cell=document.getElementById(`y-${r}-${c}`);if(!cell)continue;
+    cell.classList.remove('crossed','selectable','preprinted-x');
+    if(YELLOW_LAYOUT[r][c]==='X'){cell.classList.add('preprinted-x');cell.textContent='✕';continue;}
+    if(S.yellow.crossed[r][c]){cell.classList.add('crossed');cell.textContent='';continue;}
+    cell.textContent=YELLOW_LAYOUT[r][c];
+    if(bm==='yellow_X'||bm==='black_any') cell.classList.add('selectable');
+    else if(placing&&canPlaceY(r,c)) cell.classList.add('selectable');
   }
-  // Yellow col scores
-  for (let c = 0; c < 4; c++) {
-    const b = document.getElementById(`ycs-${c}`);
-    if (b) b.classList.toggle('earned', state.yellow.colEarned[c]);
-  }
-  for (let r = 0; r < 4; r++) {
-    const b = document.getElementById(`yrb-${r}`);
-    if (b) b.classList.toggle('earned', state.yellow.rowBonusEarned[r]);
-  }
-  const yd = document.getElementById('y-diag-badge');
-  if (yd) yd.style.opacity = state.yellow.diagEarned ? '0.3' : '1';
+  [0,1,2,3].forEach(c=>{const b=document.getElementById(`ycs-${c}`);if(b)b.classList.toggle('earned',S.yellow.colEarned[c]);});
+  [0,1,2,3].forEach(r=>{const b=document.getElementById(`yrb-${r}`);if(b)b.classList.toggle('earned',S.yellow.rowEarned[r]);});
+  const yd=document.getElementById('y-diag-badge');if(yd)yd.style.opacity=S.yellow.diagEarned?'0.3':'1';
 
-  // Blue grid
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 4; c++) {
-      if (BLUE_LAYOUT[r][c] === null) continue;
-      const cell = document.getElementById(`b-${r}-${c}`);
-      if (!cell) continue;
-      cell.classList.remove('crossed', 'selectable', 'disabled');
-      if (state.blue.crossed[r][c]) {
-        cell.classList.add('crossed');
-        cell.textContent = '';
-      } else {
-        cell.textContent = BLUE_LAYOUT[r][c];
-        const isBonusOpt = (state._bonusMode === 'blue_X' && state._bonusOpts?.some(([or,oc]) => or===r&&oc===c))
-          || state._bonusMode === 'black_any';
-        if (isBonusOpt) {
-          cell.classList.add('selectable');
-          cell.onclick = () => {
-            if (state._bonusMode === 'blue_X') { triggerBonusCell(r, c); }
-            else if (state._bonusMode === 'black_any') { triggerBonusAreaCell('blue', r, c); }
-            else if (state.awaitingPlacement) placeOnBlue(r, c);
-          };
-        } else if (state.awaitingPlacement && canPlaceBlue(r,c)) {
-          cell.classList.add('selectable');
-        }
-      }
-    }
+  // Blue
+  for(let r=0;r<3;r++)for(let c=0;c<4;c++){
+    if(BLUE_LAYOUT[r][c]===null)continue;
+    const cell=document.getElementById(`b-${r}-${c}`);if(!cell)continue;
+    cell.classList.remove('crossed','selectable');
+    if(S.blue.crossed[r][c]){cell.classList.add('crossed');cell.textContent='';continue;}
+    cell.textContent=BLUE_LAYOUT[r][c];
+    if(bm==='blue_X'||bm==='black_any') cell.classList.add('selectable');
+    else if(placing&&canPlaceB(r,c)) cell.classList.add('selectable');
   }
-  // Blue milestones: pip i (showing ms[i] pts) lights up when count >= i+1
-  const blueCount = [0,1,2].reduce((s,r) => s + [0,1,2,3].filter(c => BLUE_LAYOUT[r][c]!==null && state.blue.crossed[r][c]).length, 0);
-  BLUE_MILESTONES.forEach((pts, i) => {
-    const pip = document.getElementById(`bms-${i}`);
-    if (pip) pip.classList.toggle('reached', blueCount >= i + 1);
-  });
-  // Blue bonuses
-  BLUE_ROW_BONUSES.forEach((_, r) => {
-    const b = document.getElementById(`brb-${r}`);
-    if (b) b.classList.toggle('earned', state.blue.rowBonusEarned[r]);
-  });
-  BLUE_COL_BONUSES.forEach((_, c) => {
-    const b = document.getElementById(`bcb-${c}`);
-    if (b) b.classList.toggle('earned', state.blue.colBonusEarned[c]);
-  });
+  const bc=[0,1,2].reduce((s,r)=>s+[0,1,2,3].filter(c=>BLUE_LAYOUT[r][c]!==null&&S.blue.crossed[r][c]).length,0);
+  BLUE_MILESTONES.forEach((_,i)=>{const p=document.getElementById(`bms-${i}`);if(p)p.classList.toggle('reached',bc>=i+1);});
+  BLUE_ROW_BONUSES.forEach((_,r)=>{const b=document.getElementById(`brb-${r}`);if(b)b.classList.toggle('earned',S.blue.rowEarned[r]);});
+  BLUE_COL_BONUSES.forEach((_,c)=>{const b=document.getElementById(`bcb-${c}`);if(b)b.classList.toggle('earned',S.blue.colEarned[c]);});
 
-  // Green — update pts milestone pips above
-  GREEN_FIELDS.forEach((f, i) => {
-    const pip = document.getElementById(`gpts-${i}`);
-    if (pip) pip.classList.toggle('reached', i < state.green.next);
-  });
+  // Green pips
+  GREEN_FIELDS.forEach((_,i)=>{const p=document.getElementById(`gpts-${i}`);if(p)p.classList.toggle('reached',i<S.green.next);});
   // Green cells
-  GREEN_FIELDS.forEach((f, i) => {
-    const cell = document.getElementById(`g-${i}`);
-    if (!cell) return;
-    cell.classList.remove('selectable', 'disabled', 'filled');
-    if (i < state.green.next) {
-      cell.classList.add('filled');
-      const v = state.green.filled[i];
-      cell.innerHTML = '';
-      const valSpan = document.createElement('span');
-      valSpan.style.cssText = 'font-size:1rem;font-weight:900;';
-      valSpan.textContent = v === 0 ? '✕' : v;
-      cell.appendChild(valSpan);
+  GREEN_FIELDS.forEach((f,i)=>{
+    const cell=document.getElementById(`g-${i}`);if(!cell)return;
+    cell.classList.remove('selectable','filled');
+    if(i<S.green.next){
+      cell.classList.add('filled');cell.innerHTML='';
+      const vs=document.createElement('span');vs.style.cssText='font-size:1rem;font-weight:900;';vs.textContent=S.green.filled[i]===0?'✕':S.green.filled[i];cell.appendChild(vs);
     } else {
-      // Restore cond label + bonus badge (in case cell was previously modified)
-      cell.innerHTML = '';
-      const condSpan = document.createElement('span');
-      condSpan.style.cssText = 'font-size:0.75rem;font-weight:800;';
-      condSpan.textContent = '≥' + f.cond;
-      cell.appendChild(condSpan);
-      if (f.bonus) {
-        const bs = document.createElement('span');
-        bs.className = 'cell-bonus';
-        bs.textContent = bonusLabel(f.bonus);
-        cell.appendChild(bs);
-      }
-      if (i === state.green.next && state.awaitingPlacement) {
-        const d = state.dice[state.selectedDieIdx];
-        if (d && (d.color === 'green' || d.color === 'white') && d.value >= f.cond) {
-          cell.classList.add('selectable');
-        }
-      } else if (i === state.green.next && state._bonusMode === 'black_any') {
-        cell.classList.add('selectable');
-        cell.onclick = () => triggerBonusAreaCell('green');
+      cell.innerHTML='';
+      const cs=document.createElement('span');cs.style.cssText='font-size:0.75rem;font-weight:800;';cs.textContent='≥'+f.cond;cell.appendChild(cs);
+      if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);cell.appendChild(bs);}
+      if(i===S.green.next){
+        if(bm==='green_X'||bm==='black_any') cell.classList.add('selectable');
+        else if(placing){const d=S.dice[si];if(d&&(d.color==='green'||d.color==='white')&&d.value>=f.cond)cell.classList.add('selectable');}
       }
     }
   });
 
   // Orange
-  ORANGE_FIELDS.forEach((f, i) => {
-    const cell = document.getElementById(`o-${i}`);
-    if (!cell) return;
-    cell.classList.remove('selectable', 'disabled', 'filled');
-    if (i < state.orange.next) {
-      cell.classList.add('filled');
-      cell.innerHTML = '';
-      const valSpan = document.createElement('span');
-      valSpan.style.cssText = 'font-size:0.9rem;font-weight:900;';
-      valSpan.textContent = state.orange.filled[i];
-      cell.appendChild(valSpan);
-    } else if (i === state.orange.next && state.awaitingPlacement) {
-      const d = state.dice[state.selectedDieIdx];
-      if (d && (d.color === 'orange' || d.color === 'white')) cell.classList.add('selectable');
-    } else if (i === state.orange.next && state._bonusMode === 'black_any') {
-      cell.classList.add('selectable');
-      cell.onclick = () => triggerBonusAreaCell('orange');
+  ORANGE_FIELDS.forEach((f,i)=>{
+    const cell=document.getElementById(`o-${i}`);if(!cell)return;
+    cell.classList.remove('selectable','filled');
+    if(i<S.orange.next){
+      cell.classList.add('filled');cell.innerHTML='';
+      const vs=document.createElement('span');vs.style.cssText='font-size:0.9rem;font-weight:900;';vs.textContent=S.orange.filled[i];cell.appendChild(vs);
+    } else {
+      cell.innerHTML='';
+      if(f.m>1){const ms=document.createElement('span');ms.className='cell-mult';ms.textContent='×'+f.m;cell.appendChild(ms);}
+      if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);cell.appendChild(bs);}
+      if(i===S.orange.next){
+        if(['orange_4','orange_5','black_any'].includes(bm)) cell.classList.add('selectable');
+        else if(placing){const d=S.dice[si];if(d&&(d.color==='orange'||d.color==='white'))cell.classList.add('selectable');}
+      }
     }
   });
 
   // Purple
-  PURPLE_FIELDS.forEach((f, i) => {
-    const cell = document.getElementById(`p-${i}`);
-    if (!cell) return;
-    cell.classList.remove('selectable', 'disabled', 'filled');
-    if (i < state.purple.next) {
-      cell.classList.add('filled');
-      cell.innerHTML = '';
-      const valSpan = document.createElement('span');
-      valSpan.style.cssText = 'font-size:0.9rem;font-weight:900;';
-      valSpan.textContent = state.purple.filled[i];
-      cell.appendChild(valSpan);
-    } else if (i === state.purple.next && state.awaitingPlacement) {
-      const d = state.dice[state.selectedDieIdx];
-      if (d && (d.color === 'purple' || d.color === 'white')) {
-        const prev = i > 0 ? state.purple.filled[i-1] : null;
-        if (prev === null || prev === 6 || d.value > prev) cell.classList.add('selectable');
+  PURPLE_FIELDS.forEach((f,i)=>{
+    const cell=document.getElementById(`p-${i}`);if(!cell)return;
+    cell.classList.remove('selectable','filled');
+    if(i<S.purple.next){
+      cell.classList.add('filled');cell.innerHTML='';
+      const vs=document.createElement('span');vs.style.cssText='font-size:0.9rem;font-weight:900;';vs.textContent=S.purple.filled[i];cell.appendChild(vs);
+    } else {
+      cell.innerHTML='';
+      if(f.bonus){const bs=document.createElement('span');bs.className='cell-bonus';bs.textContent=bLabel(f.bonus);cell.appendChild(bs);}
+      if(i===S.purple.next){
+        if(['purple_6','black_any'].includes(bm)) cell.classList.add('selectable');
+        else if(placing){
+          const d=S.dice[si];
+          if(d&&(d.color==='purple'||d.color==='white')){
+            const prev=i>0?S.purple.filled[i-1]:null;
+            if(prev===null||prev===6||d.value>prev)cell.classList.add('selectable');
+          }
+        }
       }
-    } else if (i === state.purple.next && state._bonusMode === 'black_any') {
-      cell.classList.add('selectable');
-      cell.onclick = () => triggerBonusAreaCell('purple');
     }
   });
 }
 
-function updatePhaseUI() {
-  const bar = document.getElementById('phase-bar');
-  const tip = document.getElementById('phase-tip');
-  bar.classList.remove('phase-active', 'phase-passive');
+function updatePhaseUI(){
+  const bar=document.getElementById('phase-bar'),tip=document.getElementById('phase-tip');
+  bar.className='phase-bar';
 
-  if (state.gameOver) {
-    bar.textContent = 'GAME OVER';
-    tip.textContent = '';
-    return;
-  }
-
-  if (state.isActive) {
+  if(S.gameOver){bar.textContent='GAME OVER';tip.textContent='';;}
+  else if(S.bonusMode||S.processingBonus){
+    bar.classList.add('phase-bonus');bar.textContent='🎁 BONUS — click a highlighted field';tip.textContent='Place the bonus on the board.';
+  } else if(S.isActive){
     bar.classList.add('phase-active');
-    if (state.rollCount === 0) {
-      bar.textContent = `Round ${state.round}/${state.maxRounds} — Active: Press ROLL`;
-      tip.textContent = 'Roll the dice to start your turn!';
-    } else if (state.awaitingExtraDie) {
-      bar.textContent = '➕ Extra Die: Click any die!';
-      tip.textContent = 'Pick any die (each die once per turn). Click Extra Die button again to cancel.';
-    } else if (state.awaitingPlacement) {
-      const d = state.dice[state.selectedDieIdx];
-      bar.textContent = `Place ${d?.color.toUpperCase()} (${d?.value}) on board`;
-      tip.textContent = 'Click a highlighted cell — or click the die again to deselect.';
-    } else if (state.mustRoll) {
-      bar.textContent = `Round ${state.round} — Active: Roll ${state.rollCount}/3`;
-      tip.textContent = 'Press ROLL to continue your turn.';
-    } else if (state.turnOver) {
-      const avail = state.extraDieCircled - state.extraDieUsed;
-      if (avail > 0) {
-        bar.textContent = `Active done — ${avail} Extra Die available`;
-        tip.textContent = 'Use Extra Die actions, then press ROLL to start passive phase.';
-      } else {
-        bar.textContent = 'Active done — press ROLL for passive phase';
-        tip.textContent = 'Press ROLL to roll for the passive turn.';
-      }
-    } else {
-      bar.textContent = `Round ${state.round} — Active: Roll ${state.rollCount}/3`;
-      tip.textContent = 'Select a die to place it, then roll again.';
-    }
+    if(S.rollCount===0){bar.textContent=`Round ${S.round}/${S.maxRounds} — Press ROLL`;tip.textContent='Roll to start your active turn.';}
+    else if(S.turnOver){
+      const av=S.extraCircled-S.extraUsed;
+      bar.textContent=av>0?`Active done — ${av} extra die available`:'Active done';
+      tip.textContent='Press ROLL to start passive phase'+(av>0?', or use Extra Die first.':'.');
+    } else if(S.awaitingExtraDie){bar.textContent='➕ Extra Die — pick any die';tip.textContent='Click a die (placeable ones are highlighted). Click Extra Die again to cancel.';}
+    else if(S.awaitingPlacement){const d=S.dice[S.selIdx];bar.textContent=`Place ${d?.color.toUpperCase()} (${d?.value})`;tip.textContent='Click a highlighted field — or click the die to deselect.';}
+    else if(S.nextRollAllowed||S.placedThisRoll){bar.textContent=`Active — Roll ${S.rollCount}/3`;tip.textContent=S.placedThisRoll?'Die placed — press ROLL for next roll.':'No valid placement — press ROLL to continue.';}
+    else{bar.textContent=`Active — Roll ${S.rollCount}/3`;tip.textContent='Select a die to place it.';}
   } else {
     bar.classList.add('phase-passive');
-    if (state.rollCount === 0) {
-      bar.textContent = `Round ${state.round} — Passive: Press ROLL`;
-      tip.textContent = 'Roll to get the silver tray dice.';
-    } else if (state.awaitingExtraDie) {
-      bar.textContent = '➕ Extra Die: Click any die!';
-      tip.textContent = 'Pick any die (each die once per turn). Click Extra Die button again to cancel.';
-    } else if (state.awaitingPlacement) {
-      const d = state.dice[state.selectedDieIdx];
-      bar.textContent = `Place ${d?.color.toUpperCase()} (${d?.value})`;
-      tip.textContent = 'Choose a highlighted cell on the board — or click the die again to deselect.';
-    } else if (state.turnOver) {
-      const avail = state.extraDieCircled - state.extraDieUsed;
-      bar.textContent = avail > 0 ? `Passive done — ${avail} Extra Die action(s) available!` : 'Round complete!';
-      tip.textContent = avail > 0 ? 'Use Extra Die or wait for next round.' : '';
-    } else {
-      bar.textContent = `Round ${state.round} — Passive: Choose 1 tray die`;
-      tip.textContent = 'Select one die from the silver tray.';
-    }
+    if(S.rollCount===0){bar.textContent='Passive — Press ROLL';tip.textContent='Roll to get the silver tray dice.';}
+    else if(S.awaitingPlacement){const d=S.dice[S.selIdx];bar.textContent=`Place ${d?.color.toUpperCase()} (${d?.value})`;tip.textContent='Click a highlighted field — or click die to deselect.';}
+    else{bar.textContent='Passive — pick a tray die';tip.textContent=S.passiveExpanded?'All dice available (no tray die was placeable).':'Select a die from the silver tray.';}
   }
 
-  // Buttons
-  // ROLL: enabled during active phase when not awaiting placement/extra-die
-  //       includes mustRoll=true (mid-turn after placement) AND turnOver (→ launch passive)
-  const canRoll = !state.gameOver && !state.awaitingPlacement && !state.awaitingExtraDie && state.isActive;
-  document.getElementById('btn-roll').disabled = !canRoll;
+  const blocking=S.bonusMode||S.processingBonus;
 
-  // REROLL: only active player, mid-turn (not turnOver, not mustRoll), has actions
-  document.getElementById('btn-reroll').disabled = !(
-    state.isActive && !state.turnOver && !state.mustRoll && state.rollCount > 0 &&
-    !state.awaitingPlacement && (state.rerollCircled - state.rerollUsed > 0)
+  // ROLL
+  const rollOk=!S.gameOver&&!S.awaitingPlacement&&!S.awaitingExtraDie&&!blocking&&(
+    S.isActive?(S.rollCount===0||(S.isActive&&(S.nextRollAllowed||S.placedThisRoll)&&!S.turnOver)||S.turnOver):S.rollCount===0
   );
+  document.getElementById('btn-roll').disabled=!rollOk;
 
-  // EXTRA DIE: only after active turn ends (turnOver=true, isActive=true), never for passive
-  // Re-check after every updateUI so newly-granted actions from bonus chains are reflected
-  const hasExtraActions = (state.extraDieCircled - state.extraDieUsed) > 0;
-  const canExtra = state.isActive && state.turnOver && hasExtraActions && !state.awaitingPlacement;
-  const btnExtra = document.getElementById('btn-extra-die');
-  btnExtra.disabled = !canExtra;
-  btnExtra.textContent = state.awaitingExtraDie ? '✕ CANCEL' : '➕ EXTRA DIE';
+  // REROLL — disabled if player already placed a die this roll
+  const rerollOk=S.isActive&&!S.turnOver&&S.rollCount>0&&!S.placedThisRoll&&!S.awaitingPlacement&&!blocking&&(S.rerollCircled-S.rerollUsed)>0;
+  document.getElementById('btn-reroll').disabled=!rerollOk;
+
+  // EXTRA DIE
+  const extraAv=S.extraCircled-S.extraUsed;
+  const extraCandOk=S.dice.some((_,i)=>!S.dice[i].extraUsed&&dieIsPlaceable(i));
+  const extraOk=S.isActive&&S.turnOver&&extraAv>0&&!S.awaitingPlacement&&!blocking;
+  const btnE=document.getElementById('btn-extra-die');
+  if(S.awaitingExtraDie){btnE.textContent='✕ CANCEL';btnE.disabled=false;}
+  else if(extraOk&&!extraCandOk){btnE.textContent='— No valid extra die';btnE.disabled=true;}
+  else{btnE.textContent=`➕ EXTRA DIE${extraAv>0?' ('+extraAv+')':''}`;btnE.disabled=!extraOk;}
 }
 
-function updateRoundUI() {
-  const container = document.getElementById('round-pips');
-  container.innerHTML = '';
-  for (let r = 1; r <= state.maxRounds; r++) {
-    const pip = document.createElement('div');
-    pip.className = 'round-pip';
-    if (r < state.round) pip.classList.add('done');
-    else if (r === state.round) pip.classList.add('current');
-    pip.textContent = r;
-    container.appendChild(pip);
+function updateRoundUI(){
+  const c=document.getElementById('round-pips');c.innerHTML='';
+  for(let r=1;r<=S.maxRounds;r++){
+    const p=document.createElement('div');p.className='round-pip';
+    if(r<S.round)p.classList.add('done');else if(r===S.round)p.classList.add('current');
+    p.textContent=r;c.appendChild(p);
   }
 }
 
-function updateActionsUI() {
-  // Reroll pips
-  const rpips = document.getElementById('reroll-pips');
-  rpips.innerHTML = '';
-  for (let i = 0; i < Math.max(state.rerollCircled, 1); i++) {
-    const pip = document.createElement('div');
-    pip.className = 'action-pip';
-    if (i < state.rerollCircled) pip.classList.add('circled');
-    if (i < state.rerollUsed) pip.classList.add('used');
-    rpips.appendChild(pip);
-  }
-  // Extra die pips
-  const epips = document.getElementById('extra-die-pips');
-  epips.innerHTML = '';
-  for (let i = 0; i < Math.max(state.extraDieCircled, 1); i++) {
-    const pip = document.createElement('div');
-    pip.className = 'action-pip';
-    if (i < state.extraDieCircled) pip.classList.add('circled');
-    if (i < state.extraDieUsed) pip.classList.add('used');
-    epips.appendChild(pip);
-  }
+function updateActionsUI(){
+  const render=(id,circled,used)=>{
+    const c=document.getElementById(id);c.innerHTML='';
+    for(let i=0;i<Math.max(circled,1);i++){
+      const p=document.createElement('div');p.className='action-pip';
+      if(i<circled)p.classList.add('circled');
+      if(i<used)p.classList.add('used');
+      c.appendChild(p);
+    }
+  };
+  render('reroll-pips',S.rerollCircled,S.rerollUsed);
+  render('extra-die-pips',S.extraCircled,S.extraUsed);
 }
 
-function addLog(msg) {
-  state.log.push(msg);
-  const area = document.getElementById('log-area');
-  area.innerHTML = state.log.slice(-30).map(m => `<div>${m}</div>`).join('');
-  area.scrollTop = area.scrollHeight;
+function addLog(msg){
+  S.log.push(msg);
+  const a=document.getElementById('log-area');
+  a.innerHTML=S.log.slice(-40).map(m=>`<div>${m}</div>`).join('');
+  a.scrollTop=a.scrollHeight;
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════
-initState();
-buildBoard();
-updateUI();
-updateScores();
-addLog('=== Solo Game Started ===');
-addLog('Press ROLL to begin Round 1!');
+// ═══════════════════════════════════════
+initState(); buildBoard(); updateUI(); updateScores();
+addLog('=== New Game ==='); addLog('Press ROLL to begin Round 1!');
 </script>
 </body>
 </html>
