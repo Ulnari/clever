@@ -689,6 +689,8 @@ function placeP(){
 function queueBonus(b){S.bonusQueue.push(b);if(!S.processingBonus)processNext();}
 
 function processNext(){
+  // Don't start the next bonus while the player is still placing the current one
+  if (S.bonusMode) return;
   if (!S.bonusQueue.length){S.processingBonus=false;updateUI();return;}
   S.processingBonus=true;
   applyBonus(S.bonusQueue.shift());
@@ -717,39 +719,44 @@ function applyBonus(b){
 
 function endBonus(){document.getElementById('bonus-overlay').classList.add('hidden');S.bonusMode=null;}
 
-// Bonus placement handlers
+// Bonus placement handlers — pattern: endBonus first, then record state, then processNext
 function bonusPlaceY(r,c){
   if (S.yellow.crossed[r][c]||YELLOW_LAYOUT[r][c]==='X') return;
+  endBonus();
   S.yellow.crossed[r][c]=true; addLog(`Bonus→Yellow[${r},${c}]✕`);
-  checkYBonuses(r,c); endBonus(); updateScores(); updateUI(); processNext();
+  checkYBonuses(r,c); updateScores(); updateUI(); processNext();
 }
 function bonusPlaceB(r,c){
   if (BLUE_LAYOUT[r][c]===null||S.blue.crossed[r][c]) return;
+  endBonus();
   S.blue.crossed[r][c]=true; addLog(`Bonus→Blue[${r},${c}]✕`);
-  checkBBonuses(r,c); endBonus(); updateScores(); updateUI(); processNext();
+  checkBBonuses(r,c); updateScores(); updateUI(); processNext();
 }
 function bonusPlaceG(){
   const n=S.green.next; if(n>=GREEN_FIELDS.length)return;
+  endBonus();
   S.green.filled[n]=0; S.green.next++;
   addLog(`Bonus→Green[${n}]✕`);
   if(GREEN_FIELDS[n].bonus)queueBonus(GREEN_FIELDS[n].bonus);
-  endBonus(); updateScores(); updateUI(); processNext();
+  updateScores(); updateUI(); processNext();
 }
 function bonusPlaceO(){
   const n=S.orange.next; if(n>=ORANGE_FIELDS.length)return;
-  const val=S.bonusMode==='orange_4'?4:S.bonusMode==='orange_5'?5:6;
+  const savedMode=S.bonusMode; endBonus();
+  const val=savedMode==='orange_4'?4:savedMode==='orange_5'?5:6;
   const m=ORANGE_FIELDS[n].m||1;
   S.orange.filled[n]=val*m; S.orange.next++;
   addLog(`Bonus→Orange[${n}]=${val}×${m}=${val*m}`);
   if(ORANGE_FIELDS[n].bonus)queueBonus(ORANGE_FIELDS[n].bonus);
-  endBonus(); updateScores(); updateUI(); processNext();
+  updateScores(); updateUI(); processNext();
 }
 function bonusPlaceP(){
   const n=S.purple.next; if(n>=PURPLE_FIELDS.length)return;
+  endBonus();
   S.purple.filled[n]=6; S.purple.next++;
   addLog(`Bonus→Purple[${n}]=6`);
   if(PURPLE_FIELDS[n].bonus)queueBonus(PURPLE_FIELDS[n].bonus);
-  endBonus(); updateScores(); updateUI(); processNext();
+  updateScores(); updateUI(); processNext();
 }
 
 // black_any routes to correct area
@@ -781,8 +788,28 @@ function checkBBonuses(r,c){
   if(!S.blue.rowEarned[r]&&rCrossed>=rLen){
     S.blue.rowEarned[r]=true; addLog(`Blue row${r}→${BLUE_ROW_BONUSES[r]}`); queueBonus(BLUE_ROW_BONUSES[r]);
   }
-  if(!S.blue.colEarned[c]&&[0,1,2].every(row=>BLUE_LAYOUT[row][c]===null||S.blue.crossed[row][c])){
-    S.blue.colEarned[c]=true; addLog(`Blue col${c}→${BLUE_COL_BONUSES[c]}`); queueBonus(BLUE_COL_BONUSES[c]);
+  // Visual column mapping: row 0 is shifted right by 1 in the UI (placeholder in visual col 0).
+  // Data col c in row 0 aligns with visual col c+1.
+  // Data col c in rows 1+2 aligns with visual col c.
+  // Visual columns:  0      1          2          3
+  //   row 0:         —      data[0][0] data[0][1] data[0][2]
+  //   row 1:         [1][0] [1][1]     [1][2]     [1][3]
+  //   row 2:         [2][0] [2][1]     [2][2]     [2][3]
+  const visualCol = (r === 0) ? c + 1 : c;
+  if (!S.blue.colEarned[visualCol]) {
+    const colComplete = [0,1,2].every(row => {
+      if (row === 0) {
+        const dc = visualCol - 1; // data col for row 0
+        if (dc < 0) return true;  // visual col 0 has no row-0 cell
+        return S.blue.crossed[0][dc];
+      }
+      return S.blue.crossed[row][visualCol];
+    });
+    if (colComplete) {
+      S.blue.colEarned[visualCol]=true;
+      addLog(`Blue col${visualCol}→${BLUE_COL_BONUSES[visualCol]}`);
+      queueBonus(BLUE_COL_BONUSES[visualCol]);
+    }
   }
 }
 
