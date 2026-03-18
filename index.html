@@ -20,7 +20,7 @@
   body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;padding:12px;user-select:none;}
   h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;background:linear-gradient(90deg,var(--yellow),var(--orange),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:4px;}
   .subtitle{text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:12px;}
-  .game-layout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:1400px;margin:0 auto;align-items:start;}
+  .game-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr) minmax(0,2fr);gap:12px;max-width:1400px;margin:0 auto;align-items:start;}
   .scoresheet-left{display:flex;flex-direction:column;gap:10px;}
   .scoresheet-right{display:flex;flex-direction:column;gap:10px;}
   .section{border-radius:var(--radius);padding:10px 12px;}
@@ -318,6 +318,7 @@ function initState() {
     selIdx:-1,
     awaitingPlacement:false,
     awaitingExtraDie:false,
+    isExtraDiePick:false,   // current awaitingPlacement came from extra die mode
 
     // Score sheet
     yellow:{
@@ -404,7 +405,7 @@ function dieIsPlaceable(i) {
 }
 
 function getCandidates() {
-  if (S.awaitingExtraDie)
+  if (S.awaitingExtraDie || S.isExtraDiePick)
     return S.dice.map((_,i)=>i).filter(i=>!S.dice[i].extraUsed);
   if (!S.isActive) {
     if (S.passiveExpanded) return S.dice.map((_,i)=>i).filter(i=>!S.dice[i].onSheet);
@@ -548,7 +549,15 @@ function useReroll() {
 }
 
 function useExtraDie() {
-  if (S.awaitingExtraDie){S.awaitingExtraDie=false;addLog('Extra die cancelled');updateUI();return;}
+  if (S.awaitingExtraDie) {
+    S.awaitingExtraDie=false; addLog('Extra die cancelled'); updateUI(); return;
+  }
+  if (S.isExtraDiePick) {
+    // Cancel while a die is already selected — deselect it, return to turnOver state
+    if (S.selIdx>=0) S.dice[S.selIdx].selected=false;
+    S.selIdx=-1; S.awaitingPlacement=false; S.isExtraDiePick=false;
+    addLog('Extra die cancelled'); updateUI(); return;
+  }
   S.awaitingExtraDie=true; updateUI();
 }
 
@@ -559,19 +568,26 @@ function selectDie(i) {
   if (S.gameOver) return;
   const d=S.dice[i];
 
-  if (S.awaitingExtraDie) {
-    if (d.extraUsed) return;
-    if (!dieIsPlaceable(i)){addLog(`${d.color.toUpperCase()} (${d.value}) has no valid placement.`);return;}
-    d.extraUsed=true; S.extraUsed++;
-    S.awaitingExtraDie=false;
-    S.selIdx=i; d.selected=true; S.awaitingPlacement=true;
-    addLog(`Extra die: ${d.color.toUpperCase()} (${d.value})`); updateUI(); return;
+  // Deselect currently selected die
+  if (S.awaitingPlacement && S.selIdx===i) {
+    d.selected=false; S.selIdx=-1; S.awaitingPlacement=false;
+    if (S.isExtraDiePick) {
+      // Return to extra die picking mode — no action consumed
+      S.isExtraDiePick=false;
+      S.awaitingExtraDie=true;
+    }
+    addLog('Deselected'); updateUI(); return;
   }
 
-  // Deselect
-  if (S.awaitingPlacement&&S.selIdx===i) {
-    d.selected=false; S.selIdx=-1; S.awaitingPlacement=false;
-    addLog('Deselected'); updateUI(); return;
+  if (S.awaitingExtraDie) {
+    if (d.extraUsed) return;
+    // Don't consume action yet — just select the die. Action consumed on commit.
+    if (S.awaitingPlacement) S.dice.forEach(x=>x.selected=false); // switch selection
+    d.selected=true; S.selIdx=i;
+    S.awaitingExtraDie=false; // temporarily off while placing
+    S.awaitingPlacement=true;
+    S.isExtraDiePick=true;
+    addLog(`Extra die selected: ${d.color.toUpperCase()} (${d.value})`); updateUI(); return;
   }
 
   // Passive candidate check
@@ -583,6 +599,7 @@ function selectDie(i) {
 
   if (S.awaitingPlacement) S.dice.forEach(x=>x.selected=false);
   d.selected=true; S.selIdx=i; S.awaitingPlacement=true;
+  S.isExtraDiePick=false;
   addLog(`Selected ${d.color.toUpperCase()} (${d.value})`); updateUI();
 }
 
@@ -591,10 +608,12 @@ function selectDie(i) {
 // ═══════════════════════════════════════
 function commitDie(i) {
   const d=S.dice[i];
-  const wasExtra=d.extraUsed&&!d.onSheet;
-  d.selected=false; S.selIdx=-1; S.awaitingPlacement=false;
+  const wasExtraPick=S.isExtraDiePick;
+  d.selected=false; S.selIdx=-1; S.awaitingPlacement=false; S.isExtraDiePick=false;
 
-  if (wasExtra) {
+  if (wasExtraPick) {
+    // Consume the action now that the die is actually placed
+    d.extraUsed=true; S.extraUsed++;
     addLog(`Extra die placed ✓ (${S.extraCircled-S.extraUsed} left)`);
     updateUI(); return;
   }
@@ -631,7 +650,7 @@ function advanceRound() {
   if (S.round>S.maxRounds){endGame();return;}
   S.isActive=true; S.rollCount=0; S.turnOver=false;
   S.nextRollAllowed=false; S.placedThisRoll=false; S.passiveExpanded=false;
-  S.roundBonusGiven=false; S.passiveDone=false;
+  S.roundBonusGiven=false; S.passiveDone=false; S.isExtraDiePick=false;
   S.dice.forEach(d=>{d.onTray=false;d.onSheet=false;d.selected=false;d.extraUsed=false;});
   addLog(`=== Round ${S.round} ===`); updateUI();
 }
@@ -1005,15 +1024,22 @@ function updateDiceUI(){
 
     if(blocking){
       el.classList.add('dimmed');
+    } else if(S.awaitingExtraDie || S.isExtraDiePick){
+      // Extra die mode: selected die glows, extraUsed dimmed, rest selectable/unplaceable
+      if(d.selected){
+        el.classList.add('selected'); el.onclick=()=>selectDie(i);
+      } else if(d.extraUsed){
+        el.classList.add('dimmed');
+      } else if(dieIsPlaceable(i)){
+        el.classList.add('selectable'); el.onclick=()=>selectDie(i);
+      } else {
+        el.classList.add('unplaceable'); el.onclick=()=>selectDie(i);
+      }
     } else if(d.selected){
-      el.classList.add('selected');el.onclick=()=>selectDie(i);
-    } else if(S.awaitingExtraDie){
-      if(d.extraUsed) el.classList.add('dimmed');
-      else if(dieIsPlaceable(i)){el.classList.add('selectable');el.onclick=()=>selectDie(i);}
-      else{el.classList.add('unplaceable');el.onclick=()=>selectDie(i);}
+      el.classList.add('selected'); el.onclick=()=>selectDie(i);
     } else {
       const isCandidate=cands.includes(i);
-      if(isCandidate&&(S.rollCount>0)&&!S.nextRollAllowed&&!S.placedThisRoll){
+      if(isCandidate&&S.rollCount>0&&!S.nextRollAllowed&&!S.placedThisRoll){
         if(dieIsPlaceable(i)){el.classList.add('selectable');el.onclick=()=>selectDie(i);}
         else{el.classList.add('unplaceable');el.onclick=()=>selectDie(i);}
       } else {
@@ -1164,9 +1190,9 @@ function updatePhaseUI(){
   // EXTRA DIE
   const extraAv=S.extraCircled-S.extraUsed;
   const extraCandOk=S.dice.some((_,i)=>!S.dice[i].extraUsed&&dieIsPlaceable(i));
-  const extraOk=S.isActive&&S.turnOver&&extraAv>0&&!S.awaitingPlacement&&!blocking;
+  const extraOk=S.isActive&&S.turnOver&&extraAv>0&&!S.awaitingPlacement&&!S.isExtraDiePick&&!blocking;
   const btnE=document.getElementById('btn-extra-die');
-  if(S.awaitingExtraDie){btnE.textContent='✕ CANCEL';btnE.disabled=false;}
+  if(S.awaitingExtraDie||S.isExtraDiePick){btnE.textContent='✕ CANCEL';btnE.disabled=false;}
   else if(extraOk&&!extraCandOk){btnE.textContent='— No valid extra die';btnE.disabled=true;}
   else{btnE.textContent=`➕ EXTRA DIE${extraAv>0?' ('+extraAv+')':''}`;btnE.disabled=!extraOk;}
 }
